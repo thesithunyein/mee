@@ -1,12 +1,11 @@
 {
-  "generated_at": "2026-11-14T08:11:16+00:00",
-  "last_date": "2026-11-14",
+  "generated_at": "2026-11-14T07:55:34+00:00",
+  "last_date": "2026-11-13",
   "first_year": 2001,
   "unit": "Mee Fire Index (NOAA-20 VIIRS-equivalent active-fire detections)",
   "sources": [
     "NASA FIRMS: MODIS Collection 6.1 active fires (Terra, Aqua), SP + NRT",
     "NASA FIRMS: VIIRS 375 m active fires (Suomi NPP, NOAA-20, NOAA-21), SP + NRT",
     "Boundaries: geoBoundaries gbOpen MMR ADM1/ADM3 (CC BY 4.0), Myanmar Analytics Project / USAID"
-  ],
-  "updated_by": "nowcast (near-real-time VIIRS)"
+  ]
 }

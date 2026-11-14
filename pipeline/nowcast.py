@@ -211,7 +211,9 @@ def main() -> None:
     ap.add_argument("--end", type=date.fromisoformat, help="last day to update (default: today, UTC)")
     a = ap.parse_args()
 
-    end = a.end or datetime.now(timezone.utc).date()
+    # Only complete UTC days: both NOAA-20 passes over Myanmar (about 07:00 and 19:00 UTC) reach
+    # FIRMS by about 22:00 UTC. Before 23:00 UTC, today is still partial, so stop at yesterday.
+    end = a.end or (datetime.now(timezone.utc) - timedelta(hours=23)).date()
     start = end - timedelta(days=WINDOW_DAYS - 1)
 
     if a.raw:
