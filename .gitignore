@@ -1,0 +1,15 @@
+# secrets
+.env
+.env.*
+pipeline/.env
+
+# python
+pipeline/.venv/
+__pycache__/
+
+# large data (keep only web/public/data)
+data/
+
+# node / next
+node_modules/
+web/.next/
