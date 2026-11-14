@@ -7,7 +7,7 @@
 **Myanmar's fire seasons, day by day.**
 NASA satellite fire data for every township in one consistent calendar, with alerts when fire activity is above normal.
 
-[![Live site](https://img.shields.io/badge/live-mee--mu--topaz.vercel.app-E0451B?style=flat-square)](https://mee-mu-topaz.vercel.app)
+[![Live site](https://img.shields.io/badge/live-meefire.app-E0451B?style=flat-square)](https://meefire.app)
 [![Telegram bot](https://img.shields.io/badge/Telegram-@mee__fire__bot-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/mee_fire_bot)
 [![Data: NASA FIRMS](https://img.shields.io/badge/data-NASA%20FIRMS-0B3D91?style=flat-square&logo=nasa&logoColor=white)](https://firms.modaps.eosdis.nasa.gov/)
 [![License: MIT](https://img.shields.io/github/license/thesithunyein/mee?style=flat-square&color=17211C)](LICENSE)
@@ -17,7 +17,7 @@ NASA satellite fire data for every township in one consistent calendar, with ale
 [![DuckDB](https://img.shields.io/badge/DuckDB-pipeline-FFF000?style=flat-square&logo=duckdb&logoColor=black)](pipeline)
 [![Last commit](https://img.shields.io/github/last-commit/thesithunyein/mee?style=flat-square&color=56635C)](https://github.com/thesithunyein/mee/commits/main)
 
-[Website](https://mee-mu-topaz.vercel.app) · [Telegram alerts](https://t.me/mee_fire_bot) · [How it works](https://mee-mu-topaz.vercel.app/method) · [Report a problem](https://github.com/thesithunyein/mee/issues/new/choose)
+[Website](https://meefire.app) · [Telegram alerts](https://t.me/mee_fire_bot) · [How it works](https://meefire.app/method) · [Report a problem](https://github.com/thesithunyein/mee/issues/new/choose)
 
 </div>
 

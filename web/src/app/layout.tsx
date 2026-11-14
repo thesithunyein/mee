@@ -8,6 +8,13 @@ const grotesk = Schibsted_Grotesk({ subsets: ["latin"], variable: "--font-grotes
 const myanmar = Noto_Sans_Myanmar({ subsets: ["myanmar"], weight: ["500", "700"], variable: "--font-myanmar", display: "swap" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://meefire.app"),
+  openGraph: {
+    title: "Mee · Myanmar fire calendar",
+    description: "When and where Myanmar burns, day by day, from NASA satellite data.",
+    url: "https://meefire.app",
+    siteName: "Mee",
+  },
   title: "Mee · Myanmar fire calendar",
   description: "When and where Myanmar burns, day by day, from NASA satellite fire data. See if this week is normal for your township.",
 };

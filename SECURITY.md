@@ -4,7 +4,7 @@ Mee runs a public website and a Telegram bot, so security reports matter to us.
 
 ## Supported versions
 
-Only the live service (`main` branch, deployed at https://mee-mu-topaz.vercel.app) gets security fixes.
+Only the live service (`main` branch, deployed at https://meefire.app) gets security fixes.
 
 ## Report a vulnerability
 
