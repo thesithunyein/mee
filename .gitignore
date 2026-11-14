@@ -8,7 +8,7 @@ pipeline/.venv/
 __pycache__/
 
 # large data (keep only web/public/data)
-data/
+/data/
 
 # node / next
 node_modules/
