@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CloseIcon, MenuIcon } from "@/components/Icons";
 import { MeeMark } from "@/components/Logo";
@@ -11,17 +10,20 @@ const BOT = process.env.NEXT_PUBLIC_TELEGRAM_BOT;
 
 export function SiteHeader() {
   const { t, lang, setLang } = useLang();
-  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const link = "rounded-full px-3 py-1.5 text-ink-2 hover:bg-cell hover:text-ink";
 
-  // Close the menu on navigation and on Escape.
-  useEffect(() => setOpen(false), [pathname]);
+  // Links close the menu themselves; also close on Escape and on back/forward.
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const close = () => setOpen(false);
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("popstate", close);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("popstate", close);
+    };
   }, [open]);
 
   const items: { key: keyof typeof t.menu.items; href: string; external?: boolean }[] = [
