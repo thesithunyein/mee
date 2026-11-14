@@ -20,6 +20,10 @@ const FAQ: [string, string][] = [
     "Each satellite sees fires differently, and older ones are switching off. Raw counts jump when a satellite is added or lost. Mee puts them all on one scale, so 2005 and 2025 can be compared fairly.",
   ],
   [
+    "What happens when old satellites stop?",
+    "Nothing breaks. MODIS ends in 2027 and Suomi NPP has stopped, but NOAA-20 and NOAA-21 keep flying. Mee already converts every satellite to the NOAA-20 scale, so the record from 2000 stays comparable, and new satellites are added the same way.",
+  ],
+  [
     "What do Normal, Above normal and Far above normal mean?",
     "Mee compares the last 7 days with the same week in every past year. Above normal means busier than 3 out of 4 past years. Far above normal means busier than 9 out of 10.",
   ],
