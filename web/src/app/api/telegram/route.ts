@@ -194,7 +194,10 @@ async function onButton(q: NonNullable<Update["callback_query"]>, origin: string
     await tg("answerCallbackQuery", { callback_query_id: q.id });
     if (!p || !RADII.includes(r as (typeof RADII)[number])) return send(chatId, n.expired);
     await setNear(chatId, { lat: p.lat, lon: p.lon, r, since: Date.now() });
-    return send(chatId, n.on(r));
+    // This message also removes the "Share my location" button from the keyboard.
+    return tg("sendMessage", {
+      chat_id: chatId, text: n.on(r), parse_mode: "HTML", reply_markup: { remove_keyboard: true },
+    });
   }
 
   if (kind === "s") {
