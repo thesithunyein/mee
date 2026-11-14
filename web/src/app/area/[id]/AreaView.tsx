@@ -29,6 +29,26 @@ export default function AreaView() {
   const complete = useMemo(() => (a ? a.seasons.filter((s) => s.complete_year && s.total > 0) : []), [a]);
   const current = a?.seasons.find((s) => s.year === Number(a.last_date.slice(0, 4)));
 
+  // Every observed day as [ISO date, harmonized fire count], oldest first.
+  const daily = useMemo(() => {
+    if (!a) return [] as [string, number][];
+    const out: [string, number][] = [];
+    a.years.forEach((y, yi) =>
+      a.calendar[yi].forEach((v, d) => {
+        const iso = new Date(Date.UTC(y, 0, d + 1)).toISOString().slice(0, 10);
+        if (iso.startsWith(String(y)) && iso <= a.last_date) out.push([iso, v]);
+      }),
+    );
+    return out;
+  }, [a]);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const minDate = daily[0]?.[0] ?? "";
+  const maxDate = a?.last_date ?? "";
+  const start = from || minDate;
+  const end = to || maxDate;
+  const inRange = useMemo(() => daily.filter(([d]) => d >= start && d <= end), [daily, start, end]);
+
   if (err)
     return (
       <div className="py-20 text-center">
@@ -46,20 +66,16 @@ export default function AreaView() {
     );
 
   const csv = () => {
-    const rows = ["date,fires"];
-    a.years.forEach((y, yi) =>
-      a.calendar[yi].forEach((v, d) => {
-        const dt = new Date(Date.UTC(y, 0, d + 1));
-        if (dt.getUTCFullYear() === y && dt.toISOString().slice(0, 10) <= a.last_date) rows.push(`${dt.toISOString().slice(0, 10)},${v}`);
-      }),
-    );
+    const rows = ["date,fires", ...inRange.map(([d, v]) => `${d},${v}`)];
     const url = URL.createObjectURL(new Blob([rows.join("\n")], { type: "text/csv" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `mee_${a.name.replace(/\s+/g, "_")}_daily.csv`;
+    link.download = `mee_${a.name.replace(/\s+/g, "_")}_${start}_${end}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
+  const badRange = start > end;
+  const rangeSum = inRange.reduce((n, [, v]) => n + v, 0);
 
   const day = (iso: string | null | undefined) => (iso ? t.date(iso, false) : "–");
   const stats: [string, string][] = [
@@ -128,12 +144,6 @@ export default function AreaView() {
             <h2 className="text-2xl font-semibold tracking-tight">{t.area.tableTitle}</h2>
             <p className="mt-1 text-ink-2">{t.area.tableDesc}</p>
           </div>
-          <button
-            onClick={csv}
-            className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-paper hover:bg-ink/90"
-          >
-            <DownloadIcon className="h-4 w-4" /> {t.area.download}
-          </button>
         </div>
         <div className="mt-6 overflow-x-auto">
           <table className="w-full min-w-[560px] text-left text-sm tabular-nums">
@@ -162,6 +172,49 @@ export default function AreaView() {
               ))}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-semibold tracking-tight">{t.area.dlTitle}</h2>
+        <p className="mt-1 max-w-2xl text-ink-2">{t.area.dlDesc}</p>
+        <div className="mt-6 flex flex-wrap items-end gap-4 rounded-3xl border border-line bg-white p-5 sm:p-6">
+          <label className="text-sm text-ink-2">
+            {t.area.from}
+            <input
+              type="date"
+              value={start}
+              min={minDate}
+              max={maxDate}
+              onChange={(e) => setFrom(e.target.value)}
+              className="mt-1 block rounded-xl border border-line bg-paper px-3 py-2 text-[15px] text-ink outline-none focus:border-ink-3"
+            />
+          </label>
+          <label className="text-sm text-ink-2">
+            {t.area.to}
+            <input
+              type="date"
+              value={end}
+              min={minDate}
+              max={maxDate}
+              onChange={(e) => setTo(e.target.value)}
+              className="mt-1 block rounded-xl border border-line bg-paper px-3 py-2 text-[15px] text-ink outline-none focus:border-ink-3"
+            />
+          </label>
+          <div className="min-w-[10rem] pb-2 text-sm" role="status">
+            {badRange ? (
+              <span className="text-ember">{t.area.rangeBad}</span>
+            ) : (
+              <span className="font-medium">{t.area.rangeTotal(fmt(rangeSum), fmt(inRange.length))}</span>
+            )}
+          </div>
+          <button
+            onClick={csv}
+            disabled={badRange || inRange.length === 0}
+            className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-paper hover:bg-ink/90 disabled:opacity-40 sm:ml-auto"
+          >
+            <DownloadIcon className="h-4 w-4" /> {t.area.download}
+          </button>
         </div>
       </section>
     </div>
