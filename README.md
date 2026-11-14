@@ -17,7 +17,7 @@ NASA satellite fire data for every township in one consistent calendar, with ale
 [![DuckDB](https://img.shields.io/badge/DuckDB-pipeline-FFF000?style=flat-square&logo=duckdb&logoColor=black)](pipeline)
 [![Last commit](https://img.shields.io/github/last-commit/thesithunyein/mee?style=flat-square&color=56635C)](https://github.com/thesithunyein/mee/commits/main)
 
-[Website](https://meefire.app) · [Telegram alerts](https://t.me/mee_fire_bot) · [How it works](https://meefire.app/method) · [Report a problem](https://github.com/thesithunyein/mee/issues/new/choose)
+[Website](https://meefire.app) · [Telegram alerts](https://t.me/mee_fire_bot) · [Slides](https://meefire.app/deck.pdf) · [How it works](https://meefire.app/method) · [Report a problem](https://github.com/thesithunyein/mee/issues/new/choose)
 
 </div>
 
@@ -46,20 +46,27 @@ Without one consistent record, a fire manager can't tell whether this week in th
 
 ## What Mee does
 
-Mee merges all five satellites into **one consistent record from 2000 to today**, on the scale of NOAA-20, the satellite that keeps operating. It then turns that record into something people can use:
+Mee merges all five satellites into **one consistent record from 2001 to today**, on the scale of NOAA-20, the satellite that keeps operating. It then turns that record into something people can use:
 
 | | |
 |---|---|
 | **Fire calendar** | For Myanmar, its 14 states and regions, and its 330 townships. One row per year, one square per day. |
-| **This week vs normal** | The last 7 days against the same week in every past year. Each place is marked *Normal*, *Above normal* or *Far above normal*. |
+| **This week vs usual** | The last 7 days against the same week in every past year. Each place is marked *Normal*, *Higher than usual* or *Much higher than usual*. |
+| **This month vs usual** | This month so far against the same days of the month in past years, plus what a whole month usually brings. |
+| **Find your township** | Search by name, type a latitude and longitude, or tap *Use my location* (it runs on your phone; nothing is sent). |
+| **Burmese and English** | The website and the bot both work in Burmese and English. |
 | **Telegram alerts** | Follow any township in [@mee_fire_bot](https://t.me/mee_fire_bot) and get a message when its fire level changes. |
 | **Updated every day** | New NASA data is processed automatically every morning, with no manual work. |
 | **Season facts** | Start, busiest week, end and total for every year, compared with a typical year. |
-| **Open data** | Daily CSV download for any area. Free to use with credit. |
+| **Open data** | Daily counts as a CSV for any township and any date range. Free to use with credit. |
 
 **Who it's for:** emergency responders, forest and land managers, farmers' groups, health workers watching smoke, researchers and journalists.
 
 **Does the merging work?** With 2024 held out of the fitting, raw MODIS got Myanmar's yearly total wrong by **−82%**. After Mee's scaling, the error is **+3%**. See [Validate](#the-harmonization-method) below.
+
+### Why Mee, when other fire tools exist?
+
+NASA FIRMS, Global Forest Watch and GWIS are excellent, but they are built for experts: live maps, one satellite at a time, in English, by country or forest area. Mee is for people in Myanmar who need one plain answer: *is this week normal for my township?* It joins all five satellites into one record, works by Myanmar's 330 townships, speaks Burmese and sends alerts on Telegram. For forest-loss maps and custom areas, Global Forest Watch is still the better tool.
 
 ### What happens when satellites stop?
 
@@ -83,12 +90,12 @@ In short: Mee saves 25 years of MODIS history by tying it to the satellites that
 1. **Download** all MODIS and VIIRS active-fire detections for mainland Southeast Asia from the [FIRMS area API](https://firms.modaps.eosdis.nasa.gov/api/area/): the standard archive plus near-real-time data.
 2. **Clean:** keep vegetation fires only, drop low-confidence detections and count repeats once.
 3. **Assign** each detection to its township and state.
-4. **Calibrate** each satellite to NOAA-20 for every state and calendar month, using only days when both satellites observed. Sparse cases fall back to national factors.
+4. **Calibrate** each satellite to NOAA-20 for every state and calendar month, using only days when both satellites observed. Sparse cases fall back to national factors. Before Aqua started (4 July 2002) only Terra flew, so those days are first scaled up by the usual (Terra + Aqua) / Terra ratio for that state and month.
 5. **Fire index:** the average of the calibrated VIIRS estimates for each township-day, or calibrated MODIS before VIIRS existed. The unit is *NOAA-20-equivalent detections*.
 6. **Normals:** percentiles of the 7-day index for each date across past years.
 7. **Validate:** leave 2024 out, fit on every other year, predict 2024 from MODIS alone, and compare with what NOAA-20 really saw.
 
-| 2024 hold-out, 571 state-weeks | MODIS as is | MODIS scaled by Mee |
+| 2024 hold-out, 578 state-weeks | MODIS as is | MODIS scaled by Mee |
 |---|---|---|
 | Error in Myanmar's yearly total | −82% | **+3%** |
 | Typical weekly error per state | 81% | **31%** |
@@ -176,7 +183,8 @@ The daily alert job is set in [`web/vercel.json`](web/vercel.json). Telegram can
 
 - **Secrets** live only in `.env` files (git-ignored) and Vercel environment variables. Nothing secret is in the repository or sent to the browser.
 - **The bot webhook** rejects any request without Telegram's secret token header. **The cron and setup routes** require `CRON_SECRET`.
-- **Stored data:** only the Telegram chat ID and the list of places each chat follows. No names, phone numbers or locations. `/stop` deletes a chat's subscriptions, and chats that block the bot are removed automatically.
+- **Stored data:** only the Telegram chat ID, its language and the list of places it follows. No names, phone numbers or locations. `/stop` deletes everything stored for that chat, and chats that block the bot are removed automatically.
+- **Use my location** finds the township on the phone itself; the location is never sent to a server.
 - **The site** has no accounts, no cookies and no tracking.
 
 Found a vulnerability? Please report it privately. See [SECURITY.md](SECURITY.md).
@@ -189,6 +197,9 @@ Bug reports, data checks from people who know an area, and translations (Burmese
 
 - **NASA FIRMS:** MODIS Collection 6.1 and VIIRS 375 m active fires (Suomi NPP, NOAA-20, NOAA-21), from NASA LANCE / FIRMS, operated by NASA ESDIS. *We acknowledge the use of data and imagery from LANCE FIRMS operated by NASA's Earth Science Data and Information System (ESDIS) with funding provided by NASA Headquarters.*
 - **Boundaries:** [geoBoundaries](https://www.geoboundaries.org/) gbOpen, Myanmar ADM1 and ADM3, CC BY 4.0, from The Myanmar Analytics Project.
+- **Open-source code:** Next.js, React, Tailwind CSS and TypeScript for the website; Python, DuckDB, pandas, NumPy, PyArrow, Shapely, Requests and python-dotenv for the pipeline.
+- **Fonts:** Schibsted Grotesk and Noto Sans Myanmar, from Google Fonts (SIL Open Font License).
+- **Services:** Vercel (hosting), GitHub Actions (daily update), Upstash Redis (alert subscriptions), Telegram Bot API.
 
 Mee started at the NASA Space Apps Challenge 2026 (Yangon), for the *Harmonization of MODIS and VIIRS Hot Spots* challenge. It is independent and not affiliated with or endorsed by NASA.
 
