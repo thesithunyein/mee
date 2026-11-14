@@ -28,7 +28,7 @@ export const METHOD: Record<
     steps: [
       {
         title: "Get every fire the satellites saw",
-        text: "Mee downloads every fire seen over Myanmar from NASA FIRMS: MODIS on Terra and Aqua since 2000, and VIIRS on Suomi NPP, NOAA-20 and NOAA-21 since 2012.",
+        text: "Mee downloads every fire seen over Myanmar from NASA FIRMS: MODIS on Terra and Aqua since 2000, and VIIRS on Suomi NPP, NOAA-20 and NOAA-21 since 2012. Before mid-2002 only Terra was flying, so those days are scaled up by how much Terra and Aqua together usually see, per state and month.",
       },
       {
         title: "Keep only real fires on the land",
@@ -84,7 +84,7 @@ export const METHOD: Record<
     steps: [
       {
         title: "ဂြိုဟ်တုတွေ မြင်ခဲ့တဲ့ မီးအားလုံးကို ယူတယ်",
-        text: "NASA FIRMS ကနေ မြန်မာပြည်အပေါ်က မီးပွိုင့်အားလုံးကို ဒေါင်းပါတယ်။ Terra နဲ့ Aqua ပေါ်က MODIS (၂၀၀၀ ကစ) နဲ့ Suomi NPP၊ NOAA-20၊ NOAA-21 ပေါ်က VIIRS (၂၀၁၂ ကစ) ပါ။",
+        text: "NASA FIRMS ကနေ မြန်မာပြည်အပေါ်က မီးပွိုင့်အားလုံးကို ဒေါင်းပါတယ်။ Terra နဲ့ Aqua ပေါ်က MODIS (၂၀၀၀ ကစ) နဲ့ Suomi NPP၊ NOAA-20၊ NOAA-21 ပေါ်က VIIRS (၂၀၁၂ ကစ) ပါ။ ၂၀၀၂ အလယ်အထိ Terra တစ်လုံးပဲ ရှိခဲ့လို့ အဲဒီရက်တွေကို Terra နဲ့ Aqua နှစ်လုံးပေါင်း ပုံမှန်မြင်တဲ့ အချိုးနဲ့ ပြည်နယ်နဲ့ လအလိုက် ချိန်ညှိထားပါတယ်။",
       },
       {
         title: "မြေပေါ်က တကယ့်မီးတွေကိုပဲ ထားတယ်",
