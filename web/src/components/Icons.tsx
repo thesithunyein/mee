@@ -48,3 +48,9 @@ export const SendIcon = ({ className }: P) => (
 export const LocateIcon = ({ className }: P) => (
   <svg {...base} className={className}><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2.5" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>
 );
+export const MenuIcon = ({ className }: P) => (
+  <svg {...base} className={className}><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+);
+export const CloseIcon = ({ className }: P) => (
+  <svg {...base} className={className}><path d="M6 6l12 12M18 6 6 18" /></svg>
+);

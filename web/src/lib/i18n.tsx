@@ -9,7 +9,18 @@ const MONTHS_MY = ["ဇန်နဝါရီ", "ဖေဖော်ဝါရီ",
 const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const en = {
-  nav: { map: "Map", myanmar: "Myanmar", how: "How it works" },
+  nav: { map: "Map", myanmar: "Myanmar", how: "How it works", faq: "Questions" },
+  menu: {
+    open: "Menu",
+    close: "Close menu",
+    items: {
+      map: ["Map", "Find your township"],
+      myanmar: ["All of Myanmar", "The whole country, year by year"],
+      how: ["How it works", "Where the data comes from"],
+      faq: ["Questions", "Plain answers to common questions"],
+      alerts: ["Fire alerts on Telegram", "A message when your township gets busier"],
+    } as Record<"map" | "myanmar" | "how" | "faq" | "alerts", [string, string]>,
+  },
   footer: { credit: "Fire data from NASA FIRMS. Township maps from geoBoundaries (CC BY 4.0).", questions: "Questions", source: "Source code", notNasa: "Not an official NASA website" },
   status: { normal: "Normal", elevated: "Higher than usual", high: "Much higher than usual" } as Record<Status, string>,
   hero: {
@@ -145,7 +156,18 @@ const en = {
 export type Dict = typeof en;
 
 const my: Dict = {
-  nav: { map: "မြေပုံ", myanmar: "မြန်မာ", how: "ဘယ်လို အလုပ်လုပ်လဲ" },
+  nav: { map: "မြေပုံ", myanmar: "မြန်မာ", how: "ဘယ်လို အလုပ်လုပ်လဲ", faq: "မေးခွန်းများ" },
+  menu: {
+    open: "မီနူး",
+    close: "မီနူး ပိတ်ရန်",
+    items: {
+      map: ["မြေပုံ", "သင့်မြို့နယ်ကို ရှာပါ"],
+      myanmar: ["မြန်မာပြည် တစ်ခုလုံး", "တစ်နိုင်ငံလုံး၊ နှစ်အလိုက်"],
+      how: ["ဘယ်လို အလုပ်လုပ်လဲ", "ဒေတာ ဘယ်ကလာလဲ"],
+      faq: ["မေးခွန်းများ", "မေးလေ့ရှိတဲ့ မေးခွန်းတွေရဲ့ အဖြေ"],
+      alerts: ["Telegram မီးသတိပေးချက်", "သင့်မြို့နယ်မှာ မီးများလာရင် စာပို့ပေးမယ်"],
+    },
+  },
   footer: { credit: "မီးဒေတာက NASA FIRMS ကပါ။ မြို့နယ်မြေပုံက geoBoundaries (CC BY 4.0) ကပါ။", questions: "မေးခွန်းများ", source: "Source code", notNasa: "NASA ရဲ့ တရားဝင် ဝက်ဘ်ဆိုက် မဟုတ်ပါ" },
   status: { normal: "ပုံမှန်", elevated: "ပုံမှန်ထက် များ", high: "ပုံမှန်ထက် အများကြီး များ" },
   hero: {
