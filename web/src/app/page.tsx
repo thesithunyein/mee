@@ -7,6 +7,7 @@ import CalendarHeatmap from "@/components/CalendarHeatmap";
 import AreaSearch from "@/components/AreaSearch";
 import Faq from "@/components/Faq";
 import StatusPill from "@/components/StatusPill";
+import TelegramCta from "@/components/TelegramCta";
 import { CalendarIcon, ChevronIcon, MatchIcon, SatelliteIcon } from "@/components/Icons";
 import { fmt, fmtDate, type AreaDetail, type AreaSummary } from "@/lib/types";
 
@@ -47,7 +48,10 @@ export default function Home() {
               NASA satellite fire data for every township, in one calendar. See when fires usually come, and if this week is normal.
             </p>
           </div>
-          <AreaSearch areas={areas} />
+          <div className="flex w-full max-w-md flex-col gap-3">
+            <AreaSearch areas={areas} />
+            <TelegramCta />
+          </div>
         </div>
 
         <figure className="mt-12 rounded-3xl border border-line bg-white p-5 sm:p-8">

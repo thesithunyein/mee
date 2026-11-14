@@ -6,6 +6,7 @@ import Link from "next/link";
 import CalendarHeatmap from "@/components/CalendarHeatmap";
 import SeasonChart from "@/components/SeasonChart";
 import StatusPill from "@/components/StatusPill";
+import TelegramCta from "@/components/TelegramCta";
 import { BackIcon, DownloadIcon } from "@/components/Icons";
 import { fmt, fmtDate, fmtDay, type AreaDetail } from "@/lib/types";
 
@@ -73,6 +74,7 @@ export default function AreaView() {
         <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
           <h1 className="text-4xl font-semibold tracking-[-0.03em] sm:text-5xl">{a.name}</h1>
           <StatusPill status={a.status.level} />
+          <span className="sm:ml-auto"><TelegramCta place={a.name} /></span>
         </div>
         <p className="mt-2 flex flex-wrap gap-x-5 text-ink-2">
           <span>{a.level === "township" ? `Township in ${a.state}` : a.level === "state" ? "State or region" : "Whole country"}</span>

@@ -33,3 +33,7 @@ export const CalendarIcon = ({ className }: P) => (
     <path d="M8 14h2M12 14h2M16 14h0.5M8 17h2" />
   </svg>
 );
+// Paper plane (messaging)
+export const SendIcon = ({ className }: P) => (
+  <svg {...base} className={className}><path d="M21 3 3 10.5l7 2.5m11-10-8 18-3-8m11-10L10 13" /></svg>
+);
