@@ -61,7 +61,6 @@ export default function AreaView() {
     URL.revokeObjectURL(url);
   };
 
-  const ratio = a.status.p50 > 0 ? a.status.r7 / a.status.p50 : null;
   const day = (iso: string | null | undefined) => (iso ? t.date(iso, false) : "–");
   const stats: [string, string][] = [
     [t.area.thisYear, current ? fmt(current.total) : "–"],
@@ -95,7 +94,7 @@ export default function AreaView() {
             <div className="text-sm text-ink-2">{t.area.last7}</div>
             <div className="mt-1 text-5xl font-semibold tracking-tight">{fmt(a.status.r7)}</div>
             <div className="mt-1 text-sm text-ink-2">
-              {ratio == null ? t.area.noNormal : t.area.normalAbout(fmt(a.status.p50))}
+              {t.area.normalAbout(fmt(a.status.p50))}
             </div>
           </div>
           {stats.map(([k, v]) => (
