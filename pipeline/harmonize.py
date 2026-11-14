@@ -34,6 +34,9 @@ ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data" / "raw"
 OUT = ROOT / "data" / "processed"
 
+# Aqua MODIS data start. Before this only Terra flew, and Terra alone sees roughly a
+# quarter of what Terra+Aqua see (Aqua passes in the afternoon, when most burning happens).
+AQUA_START = "2002-07-04"
 HOLDOUT = 2024           # full year with MODIS + SNPP + NOAA-20 + NOAA-21 all observing
 MIN_DET = 30             # min detections on both sides to trust a state-month factor
 PANEL_START = date(2001, 1, 1)
@@ -99,7 +102,9 @@ def main() -> None:
     con.execute(f"""
         CREATE TABLE ad0 AS
         SELECT township_id, any_value(township) AS township, date,
-          coalesce(sum(n) FILTER (WHERE stream IN ('MODIS_T','MODIS_A')), 0) AS modis,
+          coalesce(sum(n) FILTER (WHERE stream IN ('MODIS_T','MODIS_A')), 0)::DOUBLE AS modis,
+          coalesce(sum(n) FILTER (WHERE stream = 'MODIS_T'), 0)::DOUBLE AS terra,
+          coalesce(sum(n) FILTER (WHERE stream = 'MODIS_A'), 0)::DOUBLE AS aqua,
           coalesce(sum(n) FILTER (WHERE stream = 'VIIRS_SNPP'),   0) AS snpp,
           coalesce(sum(n) FILTER (WHERE stream = 'VIIRS_NOAA20'), 0) AS n20,
           coalesce(sum(n) FILTER (WHERE stream = 'VIIRS_NOAA21'), 0) AS n21
@@ -108,10 +113,33 @@ def main() -> None:
     """)
     con.execute("""
         CREATE TABLE ad AS
-        SELECT a.township_id, a.township, t.state, a.date, a.modis, a.snpp, a.n20, a.n21
+        SELECT a.township_id, a.township, t.state, a.date, a.modis, a.terra, a.aqua, a.snpp, a.n20, a.n21
         FROM ad0 a LEFT JOIN tstate t USING (township_id)
     """)
     con.execute("DELETE FROM ad WHERE state IS NULL")
+
+    # Terra-only years (before Aqua): scale Terra up to a Terra+Aqua total, using the
+    # (Terra+Aqua)/Terra ratio per state and month from the years both flew.
+    con.execute(f"""
+        CREATE TABLE tar AS
+        WITH sm AS (SELECT state, month(date) AS m, sum(terra) AS t, sum(aqua) AS q
+                    FROM ad WHERE date >= DATE '2003-01-01' GROUP BY 1, 2),
+             nm AS (SELECT month(date) AS m, sum(terra) AS t, sum(aqua) AS q
+                    FROM ad WHERE date >= DATE '2003-01-01' GROUP BY 1)
+        SELECT st.state, nm.m,
+          CASE WHEN sm.t >= {MIN_DET} AND sm.q >= {MIN_DET} THEN (sm.t + sm.q) / sm.t
+               WHEN nm.t > 0 THEN (nm.t + nm.q) / nm.t
+               ELSE 1 END AS r
+        FROM nm CROSS JOIN (SELECT DISTINCT state FROM ad) st
+        LEFT JOIN sm ON sm.state = st.state AND sm.m = nm.m
+    """)
+    con.execute(f"""
+        UPDATE ad SET modis = ad.terra * tar.r
+        FROM tar
+        WHERE tar.state = ad.state AND tar.m = month(ad.date) AND ad.date < DATE '{AQUA_START}'
+    """)
+    rr = con.execute("SELECT round(min(r),2), round(median(r),2), round(max(r),2) FROM tar").fetchone()
+    log(f"Terra-only days before {AQUA_START} scaled by (Terra+Aqua)/Terra: min {rr[0]}, median {rr[1]}, max {rr[2]}")
     # Day-level coverage flags
     con.execute("""
         CREATE TABLE dcov AS
