@@ -1,6 +1,7 @@
 import {
-  alertsConfigured, areaUrl, LEVEL_TEXT, loadData, placeName, redis, redisPipeline, send,
+  alertsConfigured, areaUrl, followedBy, LEVEL_TEXT, loadData, placeName, redis, redisPipeline, send,
 } from "@/lib/alerts";
+import { unfollow } from "@/lib/alerts";
 import type { Status } from "@/lib/types";
 
 // Runs daily (vercel.json). Messages followers when an area's fire level changes,
@@ -49,7 +50,7 @@ export async function GET(req: Request) {
       if (r.ok) sent++;
       // 403: user blocked the bot. Drop the subscription.
       else if (r.error_code === 403) {
-        await redisPipeline([["SREM", `subs:${a.area_id}`, chat], ["DEL", `chat:${chat}`]]);
+        for (const id of await followedBy(Number(chat))) await unfollow(Number(chat), id);
       }
     }
   }
