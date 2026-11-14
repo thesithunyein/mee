@@ -56,6 +56,7 @@ Mee merges all five satellites into **one consistent record from 2001 to today**
 | **Find your township** | Search by name, type a latitude and longitude, or tap *Use my location* (it runs on your phone; nothing is sent). |
 | **Burmese and English** | The website and the bot both work in Burmese and English. |
 | **Telegram alerts** | Follow any township in [@mee_fire_bot](https://t.me/mee_fire_bot) and get a message when its fire level changes. |
+| **Fire near me** | Send `/near`, share your location and pick 10, 25 or 50 km. Every hour Mee checks the newest NOAA-20 and NOAA-21 fires and messages you about new ones in range, with distance and direction. |
 | **Updated every day** | New NASA data is processed automatically every morning, with no manual work. |
 | **Season facts** | Start, busiest week, end and total for every year, compared with a typical year. |
 | **Open data** | Daily counts as a CSV for any township and any date range. Free to use with credit. |
@@ -183,7 +184,7 @@ The daily alert job is set in [`web/vercel.json`](web/vercel.json). Telegram can
 
 - **Secrets** live only in `.env` files (git-ignored) and Vercel environment variables. Nothing secret is in the repository or sent to the browser.
 - **The bot webhook** rejects any request without Telegram's secret token header. **The cron and setup routes** require `CRON_SECRET`.
-- **Stored data:** only the Telegram chat ID, its language and the list of places it follows. No names, phone numbers or locations. `/stop` deletes everything stored for that chat, and chats that block the bot are removed automatically.
+- **Stored data:** only the Telegram chat ID, its language, the list of places it follows and, for chats that turn on nearby fire alerts, the location they shared and their radius. No names or phone numbers. `/stop` deletes everything stored for that chat (`/stopnear` deletes just the location), and chats that block the bot are removed automatically.
 - **Use my location** finds the township on the phone itself; the location is never sent to a server.
 - **The site** has no accounts, no cookies and no tracking.
 
