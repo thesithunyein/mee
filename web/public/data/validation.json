@@ -1,0 +1,1 @@
+{"holdout_year": 2024, "method": "MODIS->NOAA-20 factors fit per state x month on all overlap years except the hold-out year", "n_state_weeks": 0.0, "r_raw": null, "r_cal": null, "r_log_cal": null, "mape_raw": null, "mape_cal": null, "n_mape": 0.0, "national_annual_error_raw": null, "national_annual_error_cal": null, "per_state": [], "weekly": []}
