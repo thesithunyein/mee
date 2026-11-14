@@ -60,7 +60,15 @@ Mee puts every satellite on the scale of **NOAA-20**, which keeps operating, so 
 4. **Calibrate** each satellite to NOAA-20 for every state and calendar month, using only days when both satellites observed. Sparse cases fall back to national factors.
 5. **Fire index:** the average of the calibrated VIIRS estimates for each township-day, or calibrated MODIS before VIIRS existed. The unit is *NOAA-20-equivalent detections*.
 6. **Normals:** percentiles of the 7-day index for each date across past years.
-7. **Validate:** leave 2024 out, fit on every other year, predict 2024 from MODIS alone, and compare with what NOAA-20 really saw. The results are on the [How it works](https://mee-mu-topaz.vercel.app/method) page.
+7. **Validate:** leave 2024 out, fit on every other year, predict 2024 from MODIS alone, and compare with what NOAA-20 really saw.
+
+| 2024 hold-out, 571 state-weeks | MODIS as is | MODIS scaled by Mee |
+|---|---|---|
+| Error in Myanmar's yearly total | −82% | **+3%** |
+| Typical weekly error per state | 81% | **31%** |
+| Weekly correlation with NOAA-20 | 0.97 | **0.98** |
+
+Raw MODIS tracks the *timing* of fires well but misses about four out of five of the fires NOAA-20 sees. After scaling, the yearly total is within 3%.
 
 ### Limits
 
