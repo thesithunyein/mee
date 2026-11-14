@@ -72,3 +72,17 @@ export function inferno(t: number): string {
   const c = a.map((v, k) => Math.round(v + (b[k] - v) * f));
   return `rgb(${c[0]},${c[1]},${c[2]})`;
 }
+
+// Ember ramp for light backgrounds: pale straw → amber → ember → deep red → char
+const EMBER: [number, number, number][] = [
+  [251, 233, 198], [246, 180, 75], [224, 69, 27], [154, 29, 15], [61, 10, 7],
+];
+
+export function ember(t: number): string {
+  const x = Math.max(0, Math.min(1, t)) * (EMBER.length - 1);
+  const i = Math.min(EMBER.length - 2, Math.floor(x));
+  const f = x - i;
+  const [a, b] = [EMBER[i], EMBER[i + 1]];
+  const c = a.map((v, k) => Math.round(v + (b[k] - v) * f));
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}

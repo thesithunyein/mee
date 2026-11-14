@@ -3,139 +3,138 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { STATUS_COLOR, STATUS_LABEL, fmt, type AreaSummary, type Meta } from "@/lib/types";
+import CalendarHeatmap from "@/components/CalendarHeatmap";
+import AreaSearch from "@/components/AreaSearch";
+import StatusPill from "@/components/StatusPill";
+import { CalendarIcon, ChevronIcon, MatchIcon, SatelliteIcon } from "@/components/Icons";
+import { fmt, fmtDate, type AreaDetail, type AreaSummary } from "@/lib/types";
 
 const MyanmarMap = dynamic(() => import("@/components/MyanmarMap"), { ssr: false });
 
+const STEPS = [
+  { icon: SatelliteIcon, title: "Collect", text: "Daily fire detections from five NASA satellites, through NASA FIRMS." },
+  { icon: MatchIcon, title: "Match", text: "Each satellite is scaled to one shared unit, so old and new years compare fairly." },
+  { icon: CalendarIcon, title: "Compare", text: "Each week is checked against the same dates in every past year." },
+];
+
 export default function Home() {
   const [areas, setAreas] = useState<AreaSummary[]>([]);
-  const [meta, setMeta] = useState<Meta | null>(null);
-  const [q, setQ] = useState("");
+  const [mmr, setMmr] = useState<AreaDetail | null>(null);
 
   useEffect(() => {
     fetch("/data/areas.json").then((r) => r.json()).then(setAreas);
-    fetch("/data/meta.json").then((r) => r.json()).then(setMeta);
+    fetch("/data/area/MMR.json").then((r) => r.json()).then(setMmr);
   }, []);
 
-  const national = areas.find((a) => a.level === "national");
-  const townships = useMemo(() => areas.filter((a) => a.level === "township"), [areas]);
   const unusual = useMemo(
     () =>
-      townships
-        .filter((a) => a.status !== "normal")
-        .sort((a, b) => b.r7 / Math.max(b.p90, 1) - a.r7 / Math.max(a.p90, 1))
-        .slice(0, 8),
-    [townships],
+      areas
+        .filter((a) => a.level === "township" && a.status !== "normal")
+        .sort((a, b) => b.r7 / Math.max(b.p90, 1) - a.r7 / Math.max(a.p90, 1)),
+    [areas],
   );
-  const results = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    if (!s) return [];
-    return areas
-      .filter((a) => a.name?.toLowerCase().includes(s) || a.state?.toLowerCase().includes(s))
-      .slice(0, 8);
-  }, [q, areas]);
 
   return (
-    <div className="space-y-10">
-      <section className="max-w-3xl">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          When and where Myanmar burns, and whether this season is unusual.
-        </h1>
-        <p className="mt-4 text-slate-300">
-          Mee merges 25 years of NASA fire detections from five satellites (MODIS on Terra and Aqua,
-          VIIRS on Suomi NPP, NOAA-20 and NOAA-21) into one consistent fire index, so every township&apos;s
-          burning season can be compared fairly across years, even as older satellites switch off.
-        </p>
-        {meta && (
-          <p className="mt-2 text-sm text-slate-500">
-            Data through {meta.last_date}. Unit: {meta.unit}.
-          </p>
-        )}
-      </section>
-
-      <section className="grid gap-8 lg:grid-cols-[420px_1fr]">
-        <div className="rounded-xl bg-slate-900/60 p-4 ring-1 ring-slate-800">
-          <h2 className="mb-3 text-sm font-medium text-slate-300">Townships: last 7 days vs normal for this date</h2>
-          <MyanmarMap />
+    <div className="space-y-20 sm:space-y-28">
+      <section>
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <h1 className="text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.035em] sm:text-6xl">
+              Myanmar&apos;s fire seasons, day by day.
+            </h1>
+            <p className="mt-5 max-w-lg text-lg leading-relaxed text-ink-2">
+              NASA satellite fire data for every township, in one calendar. See when fires usually come, and if this week is normal.
+            </p>
+          </div>
+          <AreaSearch areas={areas} />
         </div>
 
-        <div className="space-y-8">
-          {national && (
-            <Link
-              href="/area/MMR"
-              className="block rounded-xl bg-slate-900/60 p-5 ring-1 ring-slate-800 hover:ring-orange-500/50"
-            >
-              <div className="text-sm text-slate-400">Myanmar, last 7 days</div>
-              <div className="mt-1 flex items-baseline gap-3">
-                <span className="text-3xl font-semibold">{fmt(national.r7)}</span>
-                <span
-                  className="rounded px-2 py-0.5 text-xs font-medium text-white"
-                  style={{ background: STATUS_COLOR[national.status] }}
-                >
-                  {STATUS_LABEL[national.status]}
-                </span>
+        <figure className="mt-12 rounded-3xl border border-line bg-white p-5 sm:p-8">
+          {mmr ? (
+            <div className="reveal">
+              <CalendarHeatmap years={mmr.years} calendar={mmr.calendar} lastDate={mmr.last_date} rowHeight={26} />
+            </div>
+          ) : (
+            <div className="h-[230px] animate-pulse rounded-xl bg-cell" />
+          )}
+          <figcaption className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5 text-sm text-ink-2">
+            <span>All of Myanmar. One row per year, one square per day.</span>
+            <Link href="/area/MMR" className="inline-flex items-center gap-1 font-medium text-ink hover:text-ember">
+              Open Myanmar <ChevronIcon className="h-4 w-4" />
+            </Link>
+          </figcaption>
+        </figure>
+      </section>
+
+      <section className="grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-16">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-tight">This week</h2>
+          {mmr && (
+            <p className="mt-2 text-ink-2">Latest data: {fmtDate(mmr.last_date)}</p>
+          )}
+          <div className="mt-8">
+            <MyanmarMap />
+          </div>
+        </div>
+
+        <div className="lg:pt-16">
+          {mmr && (
+            <Link href="/area/MMR" className="group block rounded-3xl bg-ink p-7 text-paper">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-paper/70">Myanmar, last 7 days</span>
+                <StatusPill status={mmr.status.level} />
               </div>
-              <div className="mt-1 text-sm text-slate-400">
-                Normal for this date: up to {fmt(national.p75)} · High above {fmt(national.p90)}
+              <div className="mt-6 text-6xl font-semibold tabular-nums tracking-tight">{fmt(mmr.status.r7)}</div>
+              <div className="mt-2 text-paper/70">fires. Normal for this week is about {fmt(mmr.status.p50)}.</div>
+              <div className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-[#F6B44B] group-hover:underline">
+                See the full calendar <ChevronIcon className="h-4 w-4" />
               </div>
-              <div className="mt-3 text-sm text-orange-400">Open the national burning calendar →</div>
             </Link>
           )}
 
-          <div>
-            <label htmlFor="search" className="text-sm text-slate-300">Find a township or state</label>
-            <input
-              id="search"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="e.g. Hsipaw, Shan, Hakha"
-              className="mt-2 w-full rounded-lg bg-slate-900 px-3 py-2 text-slate-100 ring-1 ring-slate-700 placeholder:text-slate-500 focus:outline-none focus:ring-orange-500"
-            />
-            {results.length > 0 && (
-              <ul className="mt-2 divide-y divide-slate-800 rounded-lg bg-slate-900 ring-1 ring-slate-800">
-                {results.map((a) => (
-                  <li key={a.area_id}>
-                    <Link href={`/area/${encodeURIComponent(a.area_id)}`} className="flex justify-between px-3 py-2 hover:bg-slate-800">
-                      <span>
-                        {a.name}
-                        {a.level === "township" && a.state && <span className="text-slate-500">, {a.state}</span>}
-                        {a.level === "state" && <span className="text-slate-500"> (state)</span>}
-                      </span>
-                      <span className="text-xs" style={{ color: STATUS_COLOR[a.status] === STATUS_COLOR.normal ? "#94a3b8" : STATUS_COLOR[a.status] }}>
-                        {STATUS_LABEL[a.status]}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div>
-            <h2 className="text-sm font-medium text-slate-300">Most unusual right now</h2>
-            {unusual.length === 0 ? (
-              <p className="mt-2 text-sm text-slate-500">No township is above its normal range.</p>
-            ) : (
-              <ul className="mt-2 space-y-1">
-                {unusual.map((a) => (
-                  <li key={a.area_id}>
-                    <Link
-                      href={`/area/${encodeURIComponent(a.area_id)}`}
-                      className="flex items-center justify-between rounded-md px-3 py-2 hover:bg-slate-900"
-                    >
-                      <span>
-                        {a.name} <span className="text-slate-500">{a.state}</span>
-                      </span>
-                      <span className="text-sm text-slate-300">
-                        {fmt(a.r7)} <span className="text-slate-500">vs normal ≤ {fmt(a.p75)}</span>
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <h3 className="mt-12 font-semibold">Above normal now</h3>
+          {areas.length > 0 && unusual.length === 0 && (
+            <p className="mt-3 text-ink-2">Every township is in its normal range.</p>
+          )}
+          <ul className="mt-3 divide-y divide-line border-y border-line">
+            {unusual.slice(0, 8).map((a) => (
+              <li key={a.area_id}>
+                <Link href={`/area/${encodeURIComponent(a.area_id)}`} className="flex items-center justify-between gap-4 py-3.5 hover:bg-white">
+                  <span className="min-w-0">
+                    <span className="font-medium">{a.name}</span>
+                    <span className="text-ink-3"> {a.state}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-3">
+                    <span className="text-sm tabular-nums text-ink-2">{fmt(a.r7)} <span className="text-ink-3">/ {fmt(a.p75)}</span></span>
+                    <StatusPill status={a.status} />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {unusual.length > 8 && <p className="mt-3 text-sm text-ink-3">{unusual.length - 8} more on the map.</p>}
         </div>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-semibold tracking-tight">How it works</h2>
+        <ol className="mt-8 grid gap-10 sm:grid-cols-3">
+          {STEPS.map((s, i) => (
+            <li key={s.title}>
+              <div className="flex items-center gap-3">
+                <span className="grid h-10 w-10 place-items-center rounded-full border border-line bg-white text-ember">
+                  <s.icon />
+                </span>
+                <span className="text-sm tabular-nums text-ink-3">{i + 1}</span>
+              </div>
+              <h3 className="mt-4 font-semibold">{s.title}</h3>
+              <p className="mt-1 leading-relaxed text-ink-2">{s.text}</p>
+            </li>
+          ))}
+        </ol>
+        <Link href="/method" className="mt-8 inline-flex items-center gap-1 text-sm font-medium hover:text-ember">
+          Read the method <ChevronIcon className="h-4 w-4" />
+        </Link>
       </section>
     </div>
   );

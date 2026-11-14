@@ -5,7 +5,9 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import CalendarHeatmap from "@/components/CalendarHeatmap";
 import SeasonChart from "@/components/SeasonChart";
-import { STATUS_COLOR, STATUS_LABEL, fmt, type AreaDetail } from "@/lib/types";
+import StatusPill from "@/components/StatusPill";
+import { BackIcon, DownloadIcon } from "@/components/Icons";
+import { fmt, fmtDate, fmtDay, type AreaDetail } from "@/lib/types";
 
 export default function AreaView() {
   const { id } = useParams<{ id: string }>();
@@ -22,11 +24,24 @@ export default function AreaView() {
   const complete = useMemo(() => (a ? a.seasons.filter((s) => s.complete_year && s.total > 0) : []), [a]);
   const current = a?.seasons.find((s) => s.year === Number(a.last_date.slice(0, 4)));
 
-  if (err) return <p className="text-slate-400">No fire data for this area. <Link href="/" className="text-orange-400">Back to map</Link></p>;
-  if (!a) return <p className="text-slate-500">Loading…</p>;
+  if (err)
+    return (
+      <div className="py-20 text-center">
+        <h1 className="text-2xl font-semibold">No fire record for this place</h1>
+        <p className="mt-2 text-ink-2">Satellites saw no fires here, or the link is wrong.</p>
+        <Link href="/" className="mt-6 inline-block rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper">Back to the map</Link>
+      </div>
+    );
+  if (!a)
+    return (
+      <div className="space-y-6">
+        <div className="h-10 w-64 animate-pulse rounded-lg bg-cell" />
+        <div className="h-72 animate-pulse rounded-3xl bg-cell" />
+      </div>
+    );
 
   const csv = () => {
-    const rows = ["date,mee_fire_index"];
+    const rows = ["date,fires"];
     a.years.forEach((y, yi) =>
       a.calendar[yi].forEach((v, d) => {
         const dt = new Date(Date.UTC(y, 0, d + 1));
@@ -41,79 +56,98 @@ export default function AreaView() {
     URL.revokeObjectURL(url);
   };
 
+  const ratio = a.status.p50 > 0 ? a.status.r7 / a.status.p50 : null;
+  const stats: [string, string][] = [
+    ["This year so far", current ? fmt(current.total) : "–"],
+    ["Typical full year", complete.length ? fmt(median(complete.map((s) => s.total))) : "–"],
+    ["Season start", fmtDay(current?.start_date)],
+    ["Busiest week", fmtDay(current?.peak_date)],
+  ];
+
   return (
-    <div className="space-y-10">
-      <div>
-        <Link href="/" className="text-sm text-slate-400 hover:text-white">← Map</Link>
-        <div className="mt-2 flex flex-wrap items-baseline gap-3">
-          <h1 className="text-3xl font-semibold tracking-tight">{a.name}</h1>
-          {a.level === "township" && a.state && <span className="text-slate-400">{a.state}</span>}
-          <span className="rounded px-2 py-0.5 text-xs font-medium text-white" style={{ background: STATUS_COLOR[a.status.level] }}>
-            {STATUS_LABEL[a.status.level]}
-          </span>
+    <div className="space-y-16">
+      <header>
+        <Link href="/" className="inline-flex items-center gap-1 text-sm text-ink-2 hover:text-ink">
+          <BackIcon className="h-4 w-4" /> Map
+        </Link>
+        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <h1 className="text-4xl font-semibold tracking-[-0.03em] sm:text-5xl">{a.name}</h1>
+          <StatusPill status={a.status.level} />
         </div>
-        <p className="mt-2 text-slate-300">
-          Last 7 days (to {a.last_date}): <b>{fmt(a.status.r7)}</b>. Normal for this date is about {fmt(a.status.p50)},
-          elevated above {fmt(a.status.p75)}, high above {fmt(a.status.p90)}.
+        <p className="mt-2 flex flex-wrap gap-x-5 text-ink-2">
+          <span>{a.level === "township" ? `Township in ${a.state}` : a.level === "state" ? "State or region" : "Whole country"}</span>
+          <span className="text-ink-3">Data to {fmtDate(a.last_date)}</span>
         </p>
-      </div>
 
-      <section className="grid gap-4 sm:grid-cols-4">
-        {[
-          ["This year so far", current ? fmt(current.total) : "–"],
-          ["Typical full year", complete.length ? fmt(median(complete.map((s) => s.total))) : "–"],
-          ["Peak this year", current?.peak_date ?? "–"],
-          ["Season start this year", current?.start_date ?? "–"],
-        ].map(([k, v]) => (
-          <div key={k} className="rounded-xl bg-slate-900/60 p-4 ring-1 ring-slate-800">
-            <div className="text-xs text-slate-400">{k}</div>
-            <div className="mt-1 text-xl font-semibold">{v}</div>
+        <div className="mt-10 grid gap-8 border-y border-line py-8 sm:grid-cols-[1.3fr_repeat(4,1fr)]">
+          <div>
+            <div className="text-sm text-ink-2">Last 7 days</div>
+            <div className="mt-1 text-5xl font-semibold tabular-nums tracking-tight">{fmt(a.status.r7)}</div>
+            <div className="mt-1 text-sm text-ink-2">
+              {ratio == null ? "No normal yet" : `Normal is about ${fmt(a.status.p50)}`}
+            </div>
           </div>
-        ))}
+          {stats.map(([k, v]) => (
+            <div key={k} className="sm:border-l sm:border-line sm:pl-6">
+              <div className="text-sm text-ink-2">{k}</div>
+              <div className="mt-1 text-2xl font-semibold tabular-nums">{v}</div>
+            </div>
+          ))}
+        </div>
+      </header>
+
+      <section>
+        <h2 className="text-2xl font-semibold tracking-tight">Fire calendar</h2>
+        <p className="mt-1 text-ink-2">One row per year, one square per day. Darker means more fire.</p>
+        <div className="mt-6 rounded-3xl border border-line bg-white p-5 sm:p-8">
+          <CalendarHeatmap years={a.years} calendar={a.calendar} lastDate={a.last_date} />
+        </div>
       </section>
 
-      <section className="rounded-xl bg-slate-900/60 p-5 ring-1 ring-slate-800">
-        <h2 className="text-lg font-medium">Burning calendar</h2>
-        <p className="mb-4 mt-1 text-sm text-slate-400">
-          Each row is a year, each column a day. Colour shows the daily Mee Fire Index (harmonized across all five satellites).
-        </p>
-        <CalendarHeatmap years={a.years} calendar={a.calendar} lastDate={a.last_date} />
+      <section>
+        <h2 className="text-2xl font-semibold tracking-tight">This year against normal</h2>
+        <p className="mt-1 text-ink-2">Fires per 7 days. The shaded band is what past years looked like on the same dates.</p>
+        <div className="mt-6 rounded-3xl border border-line bg-white p-5 sm:p-8">
+          <SeasonChart years={a.years} calendar={a.calendar} normals={a.normals} lastDate={a.last_date} />
+        </div>
       </section>
 
-      <section className="rounded-xl bg-slate-900/60 p-5 ring-1 ring-slate-800">
-        <h2 className="text-lg font-medium">This season vs normal</h2>
-        <p className="mb-4 mt-1 text-sm text-slate-400">7-day fire index compared with the range seen in past years on the same dates.</p>
-        <SeasonChart years={a.years} calendar={a.calendar} normals={a.normals} lastDate={a.last_date} />
-      </section>
-
-      <section className="rounded-xl bg-slate-900/60 p-5 ring-1 ring-slate-800">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium">Seasons by year</h2>
-          <button onClick={csv} className="rounded-md bg-slate-800 px-3 py-1.5 text-sm ring-1 ring-slate-700 hover:bg-slate-700">
-            Download daily CSV
+      <section>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight">Year by year</h2>
+            <p className="mt-1 text-ink-2">Fire season totals and dates.</p>
+          </div>
+          <button
+            onClick={csv}
+            className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-paper hover:bg-ink/90"
+          >
+            <DownloadIcon className="h-4 w-4" /> Download daily data (CSV)
           </button>
         </div>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="text-slate-400">
-              <tr>
-                <th className="py-2 pr-4 font-normal">Year</th>
-                <th className="py-2 pr-4 font-normal">Total</th>
-                <th className="py-2 pr-4 font-normal">vs typical</th>
-                <th className="py-2 pr-4 font-normal">Start</th>
-                <th className="py-2 pr-4 font-normal">Peak week</th>
-                <th className="py-2 pr-4 font-normal">End</th>
+        <div className="mt-6 overflow-x-auto">
+          <table className="w-full min-w-[560px] text-left text-sm tabular-nums">
+            <thead className="text-ink-3">
+              <tr className="border-b border-line">
+                {["Year", "Fires", "vs typical", "Start", "Busiest week", "End"].map((h) => (
+                  <th key={h} className="py-3 pr-4 font-medium">{h}</th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-line">
               {[...a.seasons].reverse().map((s) => (
                 <tr key={s.year}>
-                  <td className="py-2 pr-4">{s.year}{!s.complete_year && <span className="text-slate-500"> (partial)</span>}</td>
-                  <td className="py-2 pr-4">{fmt(s.total)}</td>
-                  <td className="py-2 pr-4">{s.vs_median != null ? `${Math.round(s.vs_median * 100)}%` : "–"}</td>
-                  <td className="py-2 pr-4">{s.start_date ?? "–"}</td>
-                  <td className="py-2 pr-4">{s.peak_date ?? "–"}</td>
-                  <td className="py-2 pr-4">{s.end_date ?? "–"}</td>
+                  <td className="py-3 pr-4 font-medium">
+                    {s.year}
+                    {!s.complete_year && <span className="ml-2 font-normal text-ink-3">so far</span>}
+                  </td>
+                  <td className="py-3 pr-4">{fmt(s.total)}</td>
+                  <td className="py-3 pr-4">
+                    {s.vs_median != null && s.complete_year ? <VsBar v={s.vs_median} /> : <span className="text-ink-3">–</span>}
+                  </td>
+                  <td className="py-3 pr-4">{fmtDay(s.start_date)}</td>
+                  <td className="py-3 pr-4">{fmtDay(s.peak_date)}</td>
+                  <td className="py-3 pr-4">{s.complete_year ? fmtDay(s.end_date) : "–"}</td>
                 </tr>
               ))}
             </tbody>
@@ -121,6 +155,22 @@ export default function AreaView() {
         </div>
       </section>
     </div>
+  );
+}
+
+function VsBar({ v }: { v: number }) {
+  const pct = Math.round(v * 100);
+  return (
+    <span className="flex items-center gap-2">
+      <span className="relative h-1.5 w-16 overflow-hidden rounded-full bg-cell">
+        <span
+          className="absolute inset-y-0 left-0 rounded-full"
+          style={{ width: `${Math.min(100, v * 50)}%`, background: v > 1.15 ? "#E0451B" : v < 0.85 ? "#8A958F" : "#F3A83B" }}
+        />
+        <span className="absolute inset-y-0 left-1/2 w-px bg-ink-3" />
+      </span>
+      {pct}%
+    </span>
   );
 }
 

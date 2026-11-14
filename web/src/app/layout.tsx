@@ -1,35 +1,44 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Schibsted_Grotesk, Noto_Sans_Myanmar } from "next/font/google";
+import { MeeMark } from "@/components/Logo";
 import "./globals.css";
 
+const grotesk = Schibsted_Grotesk({ subsets: ["latin"], variable: "--font-grotesk", display: "swap" });
+const myanmar = Noto_Sans_Myanmar({ subsets: ["myanmar"], weight: ["500", "700"], variable: "--font-myanmar", display: "swap" });
+
 export const metadata: Metadata = {
-  title: "Mee: Myanmar fire calendar from NASA satellites",
-  description:
-    "Mee merges 25 years of NASA MODIS and VIIRS fire detections into one consistent burning-activity calendar, with unusual-condition flags and early warning.",
+  title: "Mee · Myanmar fire calendar",
+  description: "When and where Myanmar burns, day by day, from NASA satellite fire data. See if this week is normal for your township.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-slate-950 text-slate-100 antialiased">
-        <header className="border-b border-slate-800">
-          <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-            <Link href="/" className="flex items-baseline gap-2">
-              <span className="text-xl font-semibold tracking-tight text-orange-400">Mee</span>
-              <span className="text-sm text-slate-400">မီး</span>
+    <html lang="en" className={`${grotesk.variable} ${myanmar.variable}`}>
+      <body className="min-h-screen bg-paper font-sans text-ink">
+        <header className="border-b border-line">
+          <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+            <Link href="/" className="flex items-center gap-2.5" aria-label="Mee home">
+              <MeeMark size={26} />
+              <span className="text-lg font-semibold tracking-tight">Mee</span>
+              <span className="font-my text-sm text-ink-3">မီး</span>
             </Link>
-            <div className="flex gap-5 text-sm text-slate-300">
-              <Link href="/" className="hover:text-white">Map</Link>
-              <Link href="/area/MMR" className="hover:text-white">Myanmar</Link>
-              <Link href="/method" className="hover:text-white">Method</Link>
+            <div className="flex gap-1 text-sm">
+              <Link href="/" className="rounded-full px-3 py-1.5 text-ink-2 hover:bg-cell hover:text-ink">Map</Link>
+              <Link href="/area/MMR" className="rounded-full px-3 py-1.5 text-ink-2 hover:bg-cell hover:text-ink">Myanmar</Link>
+              <Link href="/method" className="rounded-full px-3 py-1.5 text-ink-2 hover:bg-cell hover:text-ink">How it works</Link>
             </div>
           </nav>
         </header>
-        <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-        <footer className="mx-auto max-w-6xl px-4 pb-10 pt-6 text-xs leading-relaxed text-slate-500">
-          Data: NASA FIRMS active fires from MODIS (Terra, Aqua) and VIIRS (Suomi NPP, NOAA-20, NOAA-21).
-          Boundaries: geoBoundaries (CC BY 4.0), Myanmar Analytics Project / USAID. Mee is an independent
-          project built for NASA Space Apps 2026 and is not endorsed by NASA.
+        <main className="mx-auto max-w-6xl px-5 py-10 sm:py-14">{children}</main>
+        <footer className="border-t border-line">
+          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-8 text-sm text-ink-2 sm:flex-row sm:justify-between">
+            <div className="flex items-center gap-2">
+              <MeeMark size={18} />
+              <span>Fire data from NASA FIRMS. Maps from geoBoundaries (CC BY 4.0).</span>
+            </div>
+            <div className="text-ink-3">Independent project. Not affiliated with NASA.</div>
+          </div>
         </footer>
       </body>
     </html>

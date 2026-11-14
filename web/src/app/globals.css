@@ -1,4 +1,25 @@
 @import "tailwindcss";
 
-html { color-scheme: dark; }
-body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Myanmar", sans-serif; }
+@theme {
+  --color-paper: #F6F7F4;
+  --color-ink: #17211C;
+  --color-ink-2: #56635C;
+  --color-ink-3: #8A958F;
+  --color-line: #DCE1DB;
+  --color-cell: #E9ECE7;
+  --color-ember: #E0451B;
+  --color-ember-deep: #9A1D0F;
+  --color-amber: #F3A83B;
+  --font-sans: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-my: var(--font-myanmar), "Noto Sans Myanmar", sans-serif;
+}
+
+html { color-scheme: light; }
+body { -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--color-ember); outline-offset: 2px; border-radius: 4px; }
+::selection { background: #FBE9C6; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .reveal { animation: reveal 900ms cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes reveal { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+}

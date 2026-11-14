@@ -22,42 +22,48 @@ export default function MyanmarMap() {
   const paths = useMemo(() => {
     if (!gj) return [];
     const path = fitProjection(gj, W, H);
-    return gj.features.map((f) => ({ d: path(f), p: f.properties }));
+    // draw normal townships first so highlighted ones sit on top
+    const order: Record<Status, number> = { normal: 0, elevated: 1, high: 2 };
+    return gj.features
+      .map((f) => ({ d: path(f), p: f.properties }))
+      .sort((a, b) => order[a.p.status] - order[b.p.status]);
   }, [gj]);
 
-  if (!gj) return <div className="flex h-[640px] items-center justify-center text-slate-500">Loading map…</div>;
+  if (!gj) return <div className="aspect-[420/640] w-full animate-pulse rounded-2xl bg-cell" />;
 
   return (
     <div className="relative">
-      <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Myanmar townships by current fire status">
+      <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Myanmar townships coloured by fire level this week">
         {paths.map(({ d, p }) => (
           <path
             key={p.area_id}
             d={d}
-            fill={STATUS_COLOR[p.status] ?? STATUS_COLOR.normal}
-            stroke="#0b1220"
-            strokeWidth={0.4}
-            className="cursor-pointer transition-opacity hover:opacity-80"
-            onMouseEnter={() => setHover(p)}
-            onMouseLeave={() => setHover(null)}
+            fill={hover?.area_id === p.area_id ? "#17211C" : (STATUS_COLOR[p.status] ?? STATUS_COLOR.normal)}
+            stroke="#F6F7F4"
+            strokeWidth={0.5}
+            className="cursor-pointer"
+            onPointerEnter={() => setHover(p)}
+            onPointerLeave={() => setHover(null)}
             onClick={() => router.push(`/area/${encodeURIComponent(p.area_id)}`)}
-          />
+          >
+            <title>{`${p.name}: ${STATUS_LABEL[p.status]}`}</title>
+          </path>
         ))}
       </svg>
-      <div className="absolute left-2 top-2 rounded-md bg-slate-900/90 px-3 py-2 text-sm ring-1 ring-slate-700">
+      <div className="pointer-events-none absolute left-0 top-0 min-h-[52px] rounded-xl border border-line bg-white/90 px-3 py-2 text-sm backdrop-blur">
         {hover ? (
           <>
-            <div className="font-medium text-slate-100">{hover.name}</div>
-            <div className="text-slate-400">{STATUS_LABEL[hover.status]}. Click for details</div>
+            <div className="font-semibold">{hover.name}</div>
+            <div className="text-ink-2">{STATUS_LABEL[hover.status]}</div>
           </>
         ) : (
-          <div className="text-slate-400">Hover a township</div>
+          <div className="text-ink-3">Tap a township</div>
         )}
       </div>
-      <div className="mt-3 flex gap-4 text-xs text-slate-400">
+      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-2">
         {(Object.keys(STATUS_COLOR) as Status[]).map((s) => (
-          <span key={s} className="flex items-center gap-1">
-            <span className="inline-block h-3 w-3 rounded-sm" style={{ background: STATUS_COLOR[s] }} />
+          <span key={s} className="flex items-center gap-1.5">
+            <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: STATUS_COLOR[s] }} />
             {STATUS_LABEL[s]}
           </span>
         ))}

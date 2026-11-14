@@ -3,7 +3,7 @@ import AreaView from "./AreaView";
 
 export default function AreaPage() {
   return (
-    <Suspense fallback={<p className="text-slate-500">Loading…</p>}>
+    <Suspense fallback={<p className="text-ink-3">Loading…</p>}>
       <AreaView />
     </Suspense>
   );

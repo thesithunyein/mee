@@ -46,15 +46,15 @@ export interface Meta {
 }
 
 export const STATUS_COLOR: Record<Status, string> = {
-  normal: "#334155",
-  elevated: "#f59e0b",
-  high: "#ef4444",
+  normal: "#D3DAD4",
+  elevated: "#F3A83B",
+  high: "#D93A1E",
 };
 
 export const STATUS_LABEL: Record<Status, string> = {
   normal: "Normal",
-  elevated: "Elevated",
-  high: "High",
+  elevated: "Above normal",
+  high: "Far above normal",
 };
 
 export const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -80,4 +80,16 @@ export function rolling7(row: number[]): number[] {
 
 export function fmt(n: number): string {
   return Math.round(n).toLocaleString("en-US");
+}
+
+export function fmtDate(iso: string | null | undefined): string {
+  if (!iso) return "–";
+  const d = new Date(iso + "T00:00:00Z");
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
+
+export function fmtDay(iso: string | null | undefined): string {
+  if (!iso) return "–";
+  const d = new Date(iso + "T00:00:00Z");
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`;
 }

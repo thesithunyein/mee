@@ -1,28 +1,29 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { inferno as interpolateInferno } from "@/lib/geo";
+import { ember } from "@/lib/geo";
 import { MONTHS, MONTH_START_DOY, doyToLabel, fmt } from "@/lib/types";
 
 interface Props {
   years: number[];
   calendar: number[][];
   lastDate: string;
+  rowHeight?: number;
 }
 
-const LABEL_W = 44;
-const HEADER_H = 20;
+const HEADER_H = 22;
 
-export default function CalendarHeatmap({ years, calendar, lastDate }: Props) {
+export default function CalendarHeatmap({ years, calendar, lastDate, rowHeight }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(900);
-  const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
+  const [width, setWidth] = useState(0);
+  const [hover, setHover] = useState<{ x: number; y: number; title: string; value: string } | null>(null);
 
-  const rowH = years.length > 20 ? 14 : 18;
+  const labelW = width < 520 ? 34 : 44;
+  const rowH = rowHeight ?? (years.length > 20 ? 14 : 20);
   const height = HEADER_H + years.length * rowH;
 
-  // Colour scale: sqrt so small burning days stay visible; cap at the 99th percentile
+  // sqrt scale keeps small burning days visible; cap at the 99th percentile
   const vmax = useMemo(() => {
     const vals = calendar.flat().filter((v) => v > 0).sort((a, b) => a - b);
     if (!vals.length) return 1;
@@ -34,14 +35,14 @@ export default function CalendarHeatmap({ years, calendar, lastDate }: Props) {
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(([e]) => setWidth(Math.max(600, e.contentRect.width)));
+    const ro = new ResizeObserver(([e]) => setWidth(Math.max(300, e.contentRect.width)));
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
   useEffect(() => {
     const c = canvasRef.current;
-    if (!c) return;
+    if (!c || !width) return;
     const dpr = window.devicePixelRatio || 1;
     c.width = width * dpr;
     c.height = height * dpr;
@@ -49,69 +50,73 @@ export default function CalendarHeatmap({ years, calendar, lastDate }: Props) {
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, width, height);
 
-    const cellW = (width - LABEL_W) / 366;
-    ctx.font = "11px ui-sans-serif, system-ui";
-    ctx.fillStyle = "#94a3b8";
+    const cellW = (width - labelW) / 366;
+    const gap = cellW > 2.2 ? 0.5 : 0;
+    ctx.font = "500 11px ui-sans-serif, system-ui";
+    ctx.fillStyle = "#8A958F";
     ctx.textBaseline = "middle";
-    MONTH_START_DOY.forEach((d, i) => ctx.fillText(MONTHS[i], LABEL_W + (d - 1) * cellW + 2, HEADER_H / 2));
+    MONTH_START_DOY.forEach((d, i) =>
+      ctx.fillText(width < 520 ? MONTHS[i][0] : MONTHS[i], labelW + (d - 1) * cellW + 1, HEADER_H / 2),
+    );
 
     years.forEach((y, yi) => {
       const top = HEADER_H + yi * rowH;
-      ctx.fillStyle = "#94a3b8";
+      ctx.fillStyle = "#56635C";
       ctx.textAlign = "right";
-      ctx.fillText(String(y), LABEL_W - 6, top + rowH / 2);
+      ctx.fillText(width < 520 ? `'${String(y).slice(2)}` : String(y), labelW - 8, top + rowH / 2);
       ctx.textAlign = "left";
       const row = calendar[yi];
       for (let d = 0; d < 366; d++) {
         const date = new Date(Date.UTC(y, 0, d + 1));
-        if (date.getUTCFullYear() !== y || date > last) continue; // non-leap day 366 / future
+        if (date.getUTCFullYear() !== y || date > last) continue;
         const v = row[d];
-        ctx.fillStyle = v > 0 ? interpolateInferno(0.15 + 0.85 * Math.min(1, Math.sqrt(v / vmax))) : "#0f172a";
-        ctx.fillRect(LABEL_W + d * cellW, top + 1, Math.ceil(cellW), rowH - 2);
+        ctx.fillStyle = v > 0 ? ember(0.08 + 0.92 * Math.min(1, Math.sqrt(v / vmax))) : "#E9ECE7";
+        ctx.fillRect(labelW + d * cellW, top + 1.5, Math.max(cellW - gap, 0.8), rowH - 3);
       }
     });
-  }, [width, height, years, calendar, vmax, rowH, last]);
+  }, [width, height, years, calendar, vmax, rowH, last, labelW]);
 
-  function onMove(e: React.MouseEvent<HTMLCanvasElement>) {
+  function onMove(e: React.PointerEvent<HTMLCanvasElement>) {
     const r = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - r.left;
     const y = e.clientY - r.top;
-    const cellW = (width - LABEL_W) / 366;
-    const d = Math.floor((x - LABEL_W) / cellW);
+    const cellW = (width - labelW) / 366;
+    const d = Math.floor((x - labelW) / cellW);
     const yi = Math.floor((y - HEADER_H) / rowH);
     if (d < 0 || d >= 366 || yi < 0 || yi >= years.length) return setHover(null);
-    const v = calendar[yi][d];
-    setHover({ x, y, text: `${doyToLabel(d + 1)}, ${years[yi]}: ${fmt(v)} fire index` });
+    const date = new Date(Date.UTC(years[yi], 0, d + 1));
+    if (date > last || date.getUTCFullYear() !== years[yi]) return setHover(null);
+    setHover({ x, y, title: `${doyToLabel(d + 1)} ${years[yi]}`, value: `${fmt(calendar[yi][d])} fires` });
   }
 
   return (
     <div ref={wrapRef} className="relative w-full">
       <canvas
         ref={canvasRef}
-        style={{ width, height }}
-        onMouseMove={onMove}
-        onMouseLeave={() => setHover(null)}
-        className="block"
+        style={{ width: width || "100%", height }}
+        onPointerMove={onMove}
+        onPointerLeave={() => setHover(null)}
+        className="block touch-pan-y"
+        role="img"
+        aria-label={`Daily fire calendar, ${years[0]} to ${years[years.length - 1]}`}
       />
       {hover && (
         <div
-          className="pointer-events-none absolute z-10 rounded-md bg-slate-900/95 px-2 py-1 text-xs text-slate-100 shadow ring-1 ring-slate-700"
-          style={{ left: Math.min(hover.x + 12, width - 220), top: hover.y + 12 }}
+          className="pointer-events-none absolute z-10 rounded-lg border border-line bg-white px-3 py-2 text-xs shadow-[0_8px_24px_-12px_rgba(23,33,28,0.35)]"
+          style={{ left: Math.min(hover.x + 14, width - 150), top: hover.y + 14 }}
         >
-          {hover.text}
+          <div className="text-ink-3">{hover.title}</div>
+          <div className="font-semibold tabular-nums text-ink">{hover.value}</div>
         </div>
       )}
-      <div className="mt-2 flex items-center gap-2 text-xs text-slate-400">
-        <span>Less</span>
+      <div className="mt-3 flex items-center gap-2 text-xs text-ink-3">
+        <span>None</span>
+        <span className="h-2.5 w-3 rounded-[2px] bg-cell" />
         <div
-          className="h-2 w-40 rounded"
-          style={{
-            background: `linear-gradient(to right, ${[0.15, 0.4, 0.6, 0.8, 1]
-              .map((t) => interpolateInferno(t))
-              .join(",")})`,
-          }}
+          className="h-2.5 w-36 rounded-[2px]"
+          style={{ background: `linear-gradient(to right, ${[0.08, 0.3, 0.55, 0.8, 1].map(ember).join(",")})` }}
         />
-        <span>More fire activity</span>
+        <span>Most fire</span>
       </div>
     </div>
   );
