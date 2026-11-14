@@ -9,7 +9,7 @@ import Faq from "@/components/Faq";
 import StatusPill from "@/components/StatusPill";
 import TelegramCta from "@/components/TelegramCta";
 import { CalendarIcon, ChevronIcon, MatchIcon, SatelliteIcon } from "@/components/Icons";
-import { fmt, fmtDate, type AreaDetail, type AreaSummary } from "@/lib/types";
+import { fmt, fmtDate, observedYears, onlyYears, type AreaDetail, type AreaSummary } from "@/lib/types";
 
 const MyanmarMap = dynamic(() => import("@/components/MyanmarMap"), { ssr: false });
 
@@ -25,7 +25,7 @@ export default function Home() {
 
   useEffect(() => {
     fetch("/data/areas.json").then((r) => r.json()).then(setAreas);
-    fetch("/data/area/MMR.json").then((r) => r.json()).then(setMmr);
+    fetch("/data/area/MMR.json").then((r) => r.json()).then((m: AreaDetail) => setMmr(onlyYears(m, observedYears(m))));
   }, []);
 
   const unusual = useMemo(
@@ -57,7 +57,7 @@ export default function Home() {
         <figure className="mt-12 rounded-3xl border border-line bg-white p-5 sm:p-8">
           {mmr ? (
             <div className="reveal">
-              <CalendarHeatmap years={mmr.years} calendar={mmr.calendar} lastDate={mmr.last_date} rowHeight={26} />
+              <CalendarHeatmap years={mmr.years} calendar={mmr.calendar} lastDate={mmr.last_date} rowHeight={mmr.years.length > 12 ? 17 : 26} />
             </div>
           ) : (
             <div className="h-[230px] animate-pulse rounded-xl bg-cell" />

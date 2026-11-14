@@ -8,7 +8,7 @@ import SeasonChart from "@/components/SeasonChart";
 import StatusPill from "@/components/StatusPill";
 import TelegramCta from "@/components/TelegramCta";
 import { BackIcon, DownloadIcon } from "@/components/Icons";
-import { fmt, fmtDate, fmtDay, type AreaDetail } from "@/lib/types";
+import { fmt, fmtDate, fmtDay, observedYears, onlyYears, type AreaDetail } from "@/lib/types";
 
 export default function AreaView() {
   const { id } = useParams<{ id: string }>();
@@ -16,9 +16,11 @@ export default function AreaView() {
   const [err, setErr] = useState(false);
 
   useEffect(() => {
-    fetch(`/data/area/${encodeURIComponent(decodeURIComponent(id))}.json`)
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then(setA)
+    Promise.all([
+      fetch(`/data/area/${encodeURIComponent(decodeURIComponent(id))}.json`).then((r) => (r.ok ? r.json() : Promise.reject())),
+      fetch("/data/area/MMR.json").then((r) => r.json()),
+    ])
+      .then(([area, national]: [AreaDetail, AreaDetail]) => setA(onlyYears(area, observedYears(national))))
       .catch(() => setErr(true));
   }, [id]);
 

@@ -93,3 +93,19 @@ export function fmtDay(iso: string | null | undefined): string {
   const d = new Date(iso + "T00:00:00Z");
   return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`;
 }
+
+// Years with any satellite data nationally. Years still being downloaded have no data
+// anywhere and must not be drawn as "no fire".
+export function observedYears(national: AreaDetail): Set<number> {
+  return new Set(national.years.filter((_, i) => national.calendar[i].some((v) => v > 0)));
+}
+
+export function onlyYears(a: AreaDetail, keep: Set<number>): AreaDetail {
+  const idx = a.years.map((y, i) => [y, i] as const).filter(([y]) => keep.has(y));
+  return {
+    ...a,
+    years: idx.map(([y]) => y),
+    calendar: idx.map(([, i]) => a.calendar[i]),
+    seasons: a.seasons.filter((s) => keep.has(s.year)),
+  };
+}
