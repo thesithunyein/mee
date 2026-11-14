@@ -1,0 +1,45 @@
+flowchart LR
+    subgraph NASA["NASA FIRMS"]
+        direction TB
+        M["MODIS<br/>Terra · Aqua · 2000→"]
+        V["VIIRS<br/>Suomi NPP · NOAA-20 · NOAA-21 · 2012→"]
+    end
+    G["geoBoundaries<br/>330 townships · 14 states"]
+
+    subgraph P["Pipeline · Python + DuckDB"]
+        direction TB
+        D["Download<br/>5-day chunks, resumable"]
+        C["Process<br/>clean · dedupe · assign township"]
+        H["Harmonize<br/>calibrate to NOAA-20 · fire index<br/>normals · seasons · validation"]
+        E["Export<br/>static JSON"]
+        D --> C --> H --> E
+    end
+
+    subgraph W["Vercel"]
+        direction TB
+        S["Website<br/>Next.js 16"]
+        T["Bot webhook<br/>/api/telegram"]
+        K["Daily alert job<br/>/api/cron/alerts · 08:00"]
+    end
+
+    R[("Upstash Redis<br/>follows")]
+    U(("People"))
+
+    M --> D
+    V --> D
+    G --> C
+    E -- "git push" --> S
+    T <--> R
+    K <--> R
+    S --> U
+    U <-- "Telegram" --> T
+    K -- "level changed" --> U
+
+    classDef nasa fill:#0B3D91,stroke:#0B3D91,color:#fff
+    classDef step fill:#ffffff,stroke:#DCE1DB,color:#17211C
+    classDef hot fill:#E0451B,stroke:#E0451B,color:#fff
+    classDef store fill:#F6F7F4,stroke:#8A958F,color:#17211C
+    class M,V nasa
+    class D,C,E,G,S,T,K step
+    class H hot
+    class R,U store

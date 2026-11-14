@@ -48,53 +48,11 @@ Mee puts every satellite on the scale of **NOAA-20**, which keeps operating, so 
 
 ## How it works
 
-```mermaid
-flowchart LR
-    subgraph NASA["NASA FIRMS API"]
-        M["MODIS<br/>Terra · Aqua<br/>2000 →"]
-        V["VIIRS<br/>Suomi NPP · NOAA-20 · NOAA-21<br/>2012 →"]
-    end
-
-    subgraph P["Data pipeline (Python + DuckDB)"]
-        D["download_firms.py<br/>5-day chunks, resumable"]
-        C["process.py<br/>clean · dedupe · assign township"]
-        H["harmonize.py<br/>calibrate to NOAA-20 · fire index<br/>normals · seasons · validation"]
-        E["export_web.py<br/>static JSON"]
-        D --> C --> H --> E
-    end
-
-    G["geoBoundaries<br/>330 townships · 14 states"] --> C
-    M --> D
-    V --> D
-
-    subgraph W["Vercel"]
-        S["Next.js site<br/>calendar · map · area pages"]
-        T["/api/telegram<br/>bot webhook"]
-        K["/api/cron/alerts<br/>daily 08:00 Yangon"]
-    end
-
-    E -->|"git push"| S
-    R[("Upstash Redis<br/>who follows what")]
-    T <--> R
-    K <--> R
-    U(("People")) --> S
-    U <-->|"Telegram"| T
-    K -->|"level changed"| U
-```
+<p align="center"><img src="docs/architecture.png" alt="Architecture: NASA FIRMS data flows through the Python pipeline into static JSON, served by the Next.js site on Vercel; a Telegram bot and a daily alert job use Upstash Redis to message followers." width="100%" /></p>
 
 ### The harmonization method
 
-```mermaid
-flowchart TD
-    A["Every detection, 2000 → today"] --> B{"Real vegetation fire?<br/>type 0 · MODIS conf ≥ 30 · VIIRS nominal/high"}
-    B -- no --> X["dropped"]
-    B -- yes --> C["Count per township, per day, per satellite"]
-    C --> F["Calibration factor per state × month<br/>NOAA-20 ÷ other satellite, on days both observed<br/>fallback: national month → national"]
-    F --> I["Mee Fire Index<br/>mean of calibrated VIIRS; calibrated MODIS before 2012"]
-    I --> N["Normals per date<br/>p50 · p75 · p90 of the 7-day index, ±7 days"]
-    N --> L["Level today<br/>≥ p75 above normal · ≥ p90 far above normal"]
-    F --> Q["Hold-out check<br/>fit without 2024 → predict 2024 from MODIS → compare with real NOAA-20"]
-```
+<p align="center"><img src="docs/method.png" alt="Method: filter real vegetation fires, count per township and day, calibrate each satellite to NOAA-20 per state and month, build the fire index, compute normals and today's level, and check accuracy on a held-out year." width="560" /></p>
 
 1. **Download** all MODIS and VIIRS active-fire detections for mainland Southeast Asia from the [FIRMS area API](https://firms.modaps.eosdis.nasa.gov/api/area/): the standard archive plus near-real-time data.
 2. **Clean:** keep vegetation fires only, drop low-confidence detections and count repeats once.
@@ -128,7 +86,7 @@ mee/
 │   ├── src/app/              pages + API routes (/api/telegram, /api/cron/alerts)
 │   ├── src/components/       calendar heatmap, season chart, map, search
 │   └── src/lib/              types, map projection, Telegram + Redis helpers
-└── docs/                     logo and project assets
+└── docs/                     logo, diagrams (.mmd sources + rendered .png)
 ```
 
 ## Development setup

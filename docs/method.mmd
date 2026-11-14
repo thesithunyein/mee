@@ -1,0 +1,16 @@
+flowchart TD
+    A["Every detection, 2000 → today"] --> B{"Real vegetation fire?<br/>type 0 · MODIS conf ≥ 30 · VIIRS nominal/high"}
+    B -- no --> X["dropped"]
+    B -- yes --> C["Count per township, per day, per satellite"]
+    C --> F["Calibration factor per state × month<br/>NOAA-20 ÷ other satellite, on days both observed<br/>fallback: national month → national"]
+    F --> I["Mee Fire Index<br/>mean of calibrated VIIRS; calibrated MODIS before 2012"]
+    I --> N["Normals per date<br/>p50 · p75 · p90 of the 7-day index, ±7 days"]
+    N --> L["Level today<br/>≥ p75 above normal · ≥ p90 far above normal"]
+    F --> Q["Hold-out check<br/>fit without 2024 → predict 2024 from MODIS → compare with real NOAA-20"]
+    classDef step fill:#ffffff,stroke:#DCE1DB,color:#17211C
+    classDef hot fill:#E0451B,stroke:#E0451B,color:#fff
+    classDef dim fill:#F6F7F4,stroke:#DCE1DB,color:#8A958F
+    class A,C,I,N,Q step
+    class F,L hot
+    class X dim
+    class B step
