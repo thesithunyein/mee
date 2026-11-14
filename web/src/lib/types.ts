@@ -109,3 +109,9 @@ export function onlyYears(a: AreaDetail, keep: Set<number>): AreaDetail {
     seasons: a.seasons.filter((s) => keep.has(s.year)),
   };
 }
+
+export function doyLabelIn(doy: number, months: string[]): string {
+  let m = 11;
+  while (m > 0 && MONTH_START_DOY[m] > doy) m--;
+  return `${doy - MONTH_START_DOY[m] + 1} ${months[m]}`;
+}

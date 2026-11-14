@@ -8,10 +8,12 @@ import SeasonChart from "@/components/SeasonChart";
 import StatusPill from "@/components/StatusPill";
 import TelegramCta from "@/components/TelegramCta";
 import { BackIcon, DownloadIcon } from "@/components/Icons";
-import { fmt, fmtDate, fmtDay, observedYears, onlyYears, type AreaDetail } from "@/lib/types";
+import { useLang, type Dict } from "@/lib/i18n";
+import { doyLabelIn, fmt, observedYears, onlyYears, type AreaDetail } from "@/lib/types";
 
 export default function AreaView() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useLang();
   const [a, setA] = useState<AreaDetail | null>(null);
   const [err, setErr] = useState(false);
 
@@ -30,9 +32,9 @@ export default function AreaView() {
   if (err)
     return (
       <div className="py-20 text-center">
-        <h1 className="text-2xl font-semibold">No fire record for this place</h1>
-        <p className="mt-2 text-ink-2">Satellites saw no fires here, or the link is wrong.</p>
-        <Link href="/" className="mt-6 inline-block rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper">Back to the map</Link>
+        <h1 className="text-2xl font-semibold">{t.area.notFoundTitle}</h1>
+        <p className="mt-2 text-ink-2">{t.area.notFoundText}</p>
+        <Link href="/" className="mt-6 inline-block rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper">{t.area.backToMap}</Link>
       </div>
     );
   if (!a)
@@ -60,18 +62,20 @@ export default function AreaView() {
   };
 
   const ratio = a.status.p50 > 0 ? a.status.r7 / a.status.p50 : null;
+  const day = (iso: string | null | undefined) => (iso ? t.date(iso, false) : "–");
   const stats: [string, string][] = [
-    ["This year so far", current ? fmt(current.total) : "–"],
-    ["Typical full year", complete.length ? fmt(median(complete.map((s) => s.total))) : "–"],
-    ["Season start", fmtDay(current?.start_date)],
-    ["Busiest week", fmtDay(current?.peak_date)],
+    [t.area.thisYear, current ? fmt(current.total) : "–"],
+    [t.area.typicalYear, complete.length ? fmt(median(complete.map((s) => s.total))) : "–"],
+    [t.area.seasonStart, day(current?.start_date)],
+    [t.area.busiest, day(current?.peak_date)],
   ];
+  const summary = summarize(a, t);
 
   return (
     <div className="space-y-16">
       <header>
         <Link href="/" className="inline-flex items-center gap-1 text-sm text-ink-2 hover:text-ink">
-          <BackIcon className="h-4 w-4" /> Map
+          <BackIcon className="h-4 w-4" /> {t.area.back}
         </Link>
         <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
           <h1 className="text-4xl font-semibold tracking-[-0.03em] sm:text-5xl">{a.name}</h1>
@@ -79,16 +83,19 @@ export default function AreaView() {
           <span className="sm:ml-auto"><TelegramCta place={a.name} /></span>
         </div>
         <p className="mt-2 flex flex-wrap gap-x-5 text-ink-2">
-          <span>{a.level === "township" ? `Township in ${a.state}` : a.level === "state" ? "State or region" : "Whole country"}</span>
-          <span className="text-ink-3">Data to {fmtDate(a.last_date)}</span>
+          <span>{a.level === "township" ? t.area.township(a.state ?? "") : a.level === "state" ? t.area.state : t.area.country}</span>
+          <span className="text-ink-3">{t.area.dataTo(t.date(a.last_date))}</span>
         </p>
+        {summary && (
+          <p className="mt-6 max-w-2xl border-l-2 border-ember pl-4 text-lg leading-relaxed">{summary}</p>
+        )}
 
         <div className="mt-10 grid gap-8 border-y border-line py-8 sm:grid-cols-[1.3fr_repeat(4,1fr)]">
           <div>
-            <div className="text-sm text-ink-2">Last 7 days</div>
+            <div className="text-sm text-ink-2">{t.area.last7}</div>
             <div className="mt-1 text-5xl font-semibold tracking-tight">{fmt(a.status.r7)}</div>
             <div className="mt-1 text-sm text-ink-2">
-              {ratio == null ? "No normal yet" : `Normal is about ${fmt(a.status.p50)}`}
+              {ratio == null ? t.area.noNormal : t.area.normalAbout(fmt(a.status.p50))}
             </div>
           </div>
           {stats.map(([k, v]) => (
@@ -101,16 +108,16 @@ export default function AreaView() {
       </header>
 
       <section>
-        <h2 className="text-2xl font-semibold tracking-tight">Fire calendar</h2>
-        <p className="mt-1 text-ink-2">One row per year, one square per day. Darker means more fire.</p>
+        <h2 className="text-2xl font-semibold tracking-tight">{t.area.calTitle}</h2>
+        <p className="mt-1 text-ink-2">{t.area.calDesc}</p>
         <div className="mt-6 rounded-3xl border border-line bg-white p-5 sm:p-8">
           <CalendarHeatmap years={a.years} calendar={a.calendar} lastDate={a.last_date} />
         </div>
       </section>
 
       <section>
-        <h2 className="text-2xl font-semibold tracking-tight">This year against normal</h2>
-        <p className="mt-1 text-ink-2">Fires per 7 days. The shaded band is what past years looked like on the same dates.</p>
+        <h2 className="text-2xl font-semibold tracking-tight">{t.area.chartTitle}</h2>
+        <p className="mt-1 text-ink-2">{t.area.chartDesc}</p>
         <div className="mt-6 rounded-3xl border border-line bg-white p-5 sm:p-8">
           <SeasonChart years={a.years} calendar={a.calendar} normals={a.normals} lastDate={a.last_date} />
         </div>
@@ -119,21 +126,21 @@ export default function AreaView() {
       <section>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight">Year by year</h2>
-            <p className="mt-1 text-ink-2">Fire season totals and dates.</p>
+            <h2 className="text-2xl font-semibold tracking-tight">{t.area.tableTitle}</h2>
+            <p className="mt-1 text-ink-2">{t.area.tableDesc}</p>
           </div>
           <button
             onClick={csv}
             className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-paper hover:bg-ink/90"
           >
-            <DownloadIcon className="h-4 w-4" /> Download daily data (CSV)
+            <DownloadIcon className="h-4 w-4" /> {t.area.download}
           </button>
         </div>
         <div className="mt-6 overflow-x-auto">
           <table className="w-full min-w-[560px] text-left text-sm tabular-nums">
             <thead className="text-ink-3">
               <tr className="border-b border-line">
-                {["Year", "Fires", "vs typical", "Start", "Busiest week", "End"].map((h) => (
+                {t.area.cols.map((h) => (
                   <th key={h} className="py-3 pr-4 font-medium">{h}</th>
                 ))}
               </tr>
@@ -143,15 +150,15 @@ export default function AreaView() {
                 <tr key={s.year}>
                   <td className="py-3 pr-4 font-medium">
                     {s.year}
-                    {!s.complete_year && <span className="ml-2 font-normal text-ink-3">so far</span>}
+                    {!s.complete_year && <span className="ml-2 font-normal text-ink-3">{t.area.soFar}</span>}
                   </td>
                   <td className="py-3 pr-4">{fmt(s.total)}</td>
                   <td className="py-3 pr-4">
                     {s.vs_median != null && s.complete_year ? <VsBar v={s.vs_median} /> : <span className="text-ink-3">–</span>}
                   </td>
-                  <td className="py-3 pr-4">{fmtDay(s.start_date)}</td>
-                  <td className="py-3 pr-4">{fmtDay(s.peak_date)}</td>
-                  <td className="py-3 pr-4">{s.complete_year ? fmtDay(s.end_date) : "–"}</td>
+                  <td className="py-3 pr-4">{day(s.start_date)}</td>
+                  <td className="py-3 pr-4">{day(s.peak_date)}</td>
+                  <td className="py-3 pr-4">{s.complete_year ? day(s.end_date) : "–"}</td>
                 </tr>
               ))}
             </tbody>
@@ -182,4 +189,27 @@ function median(xs: number[]): number {
   const s = [...xs].sort((a, b) => a - b);
   const m = Math.floor(s.length / 2);
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+// Season days count from September, so a season running Dec -> Apr stays in one block.
+const shift = (doy: number) => (doy > 243 ? doy - 366 : doy);
+const doyOf = (iso: string) => {
+  const d = new Date(iso + "T00:00:00Z");
+  return Math.floor((d.getTime() - Date.UTC(d.getUTCFullYear(), 0, 1)) / 86400000) + 1;
+};
+const unshift = (d: number) => (d < 1 ? d + 366 : d);
+
+function summarize(a: AreaDetail, t: Dict): string | null {
+  const today = t.date(a.last_date, false);
+  const first = t.summary.level(a.name, a.status.level, today);
+  const seasons = a.seasons.filter((s) => s.complete_year && s.total > 0 && s.start_date && s.peak_date && s.end_date);
+  if (seasons.length < 3) return first;
+  const start = Math.round(median(seasons.map((s) => shift(doyOf(s.start_date!)))));
+  const peak = Math.round(median(seasons.map((s) => shift(doyOf(s.peak_date!)))));
+  const end = Math.round(median(seasons.map((s) => shift(doyOf(s.end_date!)))));
+  const now = shift(doyOf(a.last_date));
+  const label = (d: number) => doyLabelIn(unshift(d), t.months);
+  if (now < start) return `${first} ${t.summary.before(label(start), label(peak), start - now)}`;
+  if (now <= end) return `${first} ${t.summary.during(label(peak))}`;
+  return `${first} ${t.summary.after(label(start))}`;
 }

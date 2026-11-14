@@ -1,65 +1,22 @@
-const FAQ: [string, string][] = [
-  [
-    "What is Mee?",
-    "A free fire calendar for Myanmar. It shows when and where fires happen in every township and state, and whether this week is normal for the time of year.",
-  ],
-  [
-    "Who is it for?",
-    "Disaster and forest teams, farmers' groups, health workers watching smoke, researchers and journalists. Anyone who needs to know when the burning season starts and how bad it is.",
-  ],
-  [
-    "Where does the data come from?",
-    "From NASA FIRMS, which publishes fire detections from the MODIS and VIIRS instruments on five satellites. Township borders come from geoBoundaries.",
-  ],
-  [
-    "What does one fire mean here?",
-    "One hot spot seen from space, on a common scale. A big fire can show as many hot spots, so treat the number as fire activity, not a count of separate fires.",
-  ],
-  [
-    "Why not just use NASA's map?",
-    "Each satellite sees fires differently, and older ones are switching off. Raw counts jump when a satellite is added or lost. Mee puts them all on one scale, so 2005 and 2025 can be compared fairly.",
-  ],
-  [
-    "What happens when old satellites stop?",
-    "Nothing breaks. MODIS ends in 2027 and Suomi NPP has stopped, but NOAA-20 and NOAA-21 keep flying. Mee already converts every satellite to the NOAA-20 scale, so the record from 2000 stays comparable, and new satellites are added the same way.",
-  ],
-  [
-    "What do Normal, Above normal and Far above normal mean?",
-    "Mee compares the last 7 days with the same week in every past year. Above normal means busier than 3 out of 4 past years. Far above normal means busier than 9 out of 10.",
-  ],
-  [
-    "How up to date is it?",
-    "Every page shows the date of its latest data. NASA releases new detections within hours of each satellite pass.",
-  ],
-  [
-    "Does it see every fire?",
-    "No. Satellites miss small fires, fires under cloud or thick smoke, and fires that burn between passes. Use Mee for patterns and early warning, and check on the ground before acting.",
-  ],
-  [
-    "Can I use the data?",
-    "Yes. Every area page has a CSV download. Please credit NASA FIRMS and Mee. The code is open source under the MIT license.",
-  ],
-  [
-    "Who made Mee?",
-    "Sithu Nyein, a software engineer in Yangon. Mee is independent and not affiliated with NASA.",
-  ],
-];
+"use client";
+
+import { useLang } from "@/lib/i18n";
 
 export default function Faq() {
+  const { t } = useLang();
   return (
     <section id="faq" className="grid gap-10 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] lg:gap-16">
       <div>
-        <h2 className="text-2xl font-semibold tracking-tight">Questions</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">{t.faqTitle}</h2>
         <p className="mt-2 max-w-xs text-ink-2">
-          Something missing?{" "}
+          {t.faqMissing}{" "}
           <a href="https://github.com/thesithunyein/mee/issues" className="text-ink underline decoration-line underline-offset-4 hover:decoration-ink">
-            Ask on GitHub
+            {t.faqAsk}
           </a>
-          .
         </p>
       </div>
       <div className="divide-y divide-line border-y border-line">
-        {FAQ.map(([q, a]) => (
+        {t.faq.map(([q, a]) => (
           <details key={q} className="group">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 font-medium [&::-webkit-details-marker]:hidden">
               {q}

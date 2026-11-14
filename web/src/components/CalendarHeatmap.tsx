@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ember } from "@/lib/geo";
-import { MONTHS, MONTH_START_DOY, doyToLabel, fmt } from "@/lib/types";
+import { useLang } from "@/lib/i18n";
+import { MONTH_START_DOY, doyLabelIn, fmt } from "@/lib/types";
 
 interface Props {
   years: number[];
@@ -14,6 +15,7 @@ interface Props {
 const HEADER_H = 22;
 
 export default function CalendarHeatmap({ years, calendar, lastDate, rowHeight }: Props) {
+  const { t } = useLang();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -52,11 +54,11 @@ export default function CalendarHeatmap({ years, calendar, lastDate, rowHeight }
 
     const cellW = (width - labelW) / 366;
     const gap = cellW > 2.2 ? 0.5 : 0;
-    ctx.font = "500 11px ui-sans-serif, system-ui";
+    ctx.font = `500 11px ${getComputedStyle(document.body).fontFamily}`;
     ctx.fillStyle = "#8A958F";
     ctx.textBaseline = "middle";
     MONTH_START_DOY.forEach((d, i) =>
-      ctx.fillText(width < 520 ? MONTHS[i][0] : MONTHS[i], labelW + (d - 1) * cellW + 1, HEADER_H / 2),
+      ctx.fillText(width < 520 && t.monthsShort[i].length <= 3 ? t.monthsShort[i][0] : t.monthsShort[i], labelW + (d - 1) * cellW + 1, HEADER_H / 2),
     );
 
     years.forEach((y, yi) => {
@@ -74,7 +76,7 @@ export default function CalendarHeatmap({ years, calendar, lastDate, rowHeight }
         ctx.fillRect(labelW + d * cellW, top + 1.5, Math.max(cellW - gap, 0.8), rowH - 3);
       }
     });
-  }, [width, height, years, calendar, vmax, rowH, last, labelW]);
+  }, [width, height, years, calendar, vmax, rowH, last, labelW, t]);
 
   function onMove(e: React.PointerEvent<HTMLCanvasElement>) {
     const r = e.currentTarget.getBoundingClientRect();
@@ -86,7 +88,7 @@ export default function CalendarHeatmap({ years, calendar, lastDate, rowHeight }
     if (d < 0 || d >= 366 || yi < 0 || yi >= years.length) return setHover(null);
     const date = new Date(Date.UTC(years[yi], 0, d + 1));
     if (date > last || date.getUTCFullYear() !== years[yi]) return setHover(null);
-    setHover({ x, y, title: `${doyToLabel(d + 1)} ${years[yi]}`, value: `${fmt(calendar[yi][d])} fires` });
+    setHover({ x, y, title: `${doyLabelIn(d + 1, t.months)} ${years[yi]}`, value: t.tip.fires(fmt(calendar[yi][d])) });
   }
 
   return (
@@ -110,13 +112,13 @@ export default function CalendarHeatmap({ years, calendar, lastDate, rowHeight }
         </div>
       )}
       <div className="mt-3 flex items-center gap-2 text-xs text-ink-3">
-        <span>None</span>
+        <span>{t.legend.none}</span>
         <span className="h-2.5 w-3 rounded-[2px] bg-cell" />
         <div
           className="h-2.5 w-36 rounded-[2px]"
           style={{ background: `linear-gradient(to right, ${[0.08, 0.3, 0.55, 0.8, 1].map(ember).join(",")})` }}
         />
-        <span>Most fire</span>
+        <span>{t.legend.most}</span>
       </div>
     </div>
   );

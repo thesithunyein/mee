@@ -1,5 +1,5 @@
 import {
-  alertsConfigured, areaUrl, followedBy, LEVEL_TEXT, loadData, placeName, redis, redisPipeline, send,
+  alertsConfigured, areaUrl, chatLang, followedBy, levelText, loadData, placeName, redis, redisPipeline, send,
 } from "@/lib/alerts";
 import { unfollow } from "@/lib/alerts";
 import type { Status } from "@/lib/types";
@@ -35,17 +35,28 @@ export async function GET(req: Request) {
     await redis(["SET", `lvl:${a.area_id}`, a.status]);
 
     const up = rank[a.status] > rank[before];
-    const text = [
-      up ? `<b>Fire alert: ${placeName(a)}</b>` : `<b>Update: ${placeName(a)}</b>`,
-      LEVEL_TEXT[a.status],
-      up
-        ? `${Math.round(a.r7).toLocaleString("en-US")} fires in the last 7 days. Normal for this week is up to ${Math.round(a.p75).toLocaleString("en-US")}.`
-        : "Fire activity has dropped since the last update.",
-      areaUrl(origin, a),
-    ].join("\n");
-
+    const fires = Math.round(a.r7).toLocaleString("en-US");
+    const normal = Math.round(a.p75).toLocaleString("en-US");
     const chats = await redis<string[]>(["SMEMBERS", `subs:${a.area_id}`]);
     for (const chat of chats) {
+      const lang = await chatLang(chat);
+      const text = (lang === "my"
+        ? [
+            up ? `<b>မီးသတိပေးချက်: ${placeName(a)}</b>` : `<b>အပ်ဒိတ်: ${placeName(a)}</b>`,
+            levelText(a.status, lang),
+            up
+              ? `နောက်ဆုံး ၇ ရက်တွင် မီးပွိုင့် ${fires}။ ဒီအပတ်အတွက် ပုံမှန်: ${normal} အထိ။`
+              : "ယခင်အပ်ဒိတ်ထက် မီးလောင်မှု လျော့ကျသွားသည်။",
+            areaUrl(origin, a),
+          ]
+        : [
+            up ? `<b>Fire alert: ${placeName(a)}</b>` : `<b>Update: ${placeName(a)}</b>`,
+            levelText(a.status, lang),
+            up
+              ? `${fires} fires in the last 7 days. Normal for this week is up to ${normal}.`
+              : "Fire activity has dropped since the last update.",
+            areaUrl(origin, a),
+          ]).join("\n");
       const r = await send(chat, text);
       if (r.ok) sent++;
       // 403: user blocked the bot. Drop the subscription.

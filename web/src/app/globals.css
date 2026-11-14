@@ -10,7 +10,7 @@
   --color-ember: #E0451B;
   --color-ember-deep: #9A1D0F;
   --color-amber: #F3A83B;
-  --font-sans: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-grotesk), var(--font-myanmar), ui-sans-serif, system-ui, sans-serif;
   --font-my: var(--font-myanmar), "Noto Sans Myanmar", sans-serif;
 }
 
@@ -23,3 +23,7 @@ body { -webkit-font-smoothing: antialiased; }
   .reveal { animation: reveal 900ms cubic-bezier(.2,.7,.2,1) both; }
   @keyframes reveal { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
 }
+
+/* Myanmar script needs more vertical room than Latin */
+html:lang(my) body { line-height: 1.8; }
+html:lang(my) h1, html:lang(my) h2, html:lang(my) h3 { line-height: 1.45; letter-spacing: 0; }

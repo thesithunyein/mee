@@ -2,14 +2,18 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { SearchIcon } from "@/components/Icons";
+import { LocateIcon, SearchIcon } from "@/components/Icons";
 import StatusPill from "@/components/StatusPill";
+import { useLang } from "@/lib/i18n";
+import { townshipAt } from "@/lib/pip";
 import type { AreaSummary } from "@/lib/types";
 
 export default function AreaSearch({ areas }: { areas: AreaSummary[] }) {
   const router = useRouter();
+  const { t } = useLang();
   const [q, setQ] = useState("");
   const [active, setActive] = useState(0);
+  const [locMsg, setLocMsg] = useState<string | null>(null);
 
   const results = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -20,49 +24,81 @@ export default function AreaSearch({ areas }: { areas: AreaSummary[] }) {
       .slice(0, 7);
   }, [q, areas]);
 
-  const go = (a: AreaSummary) => router.push(`/area/${encodeURIComponent(a.area_id)}`);
+  const go = (id: string) => router.push(`/area/${encodeURIComponent(id)}`);
+
+  function locate() {
+    if (!navigator.geolocation) return setLocMsg(t.locate.failed);
+    setLocMsg(t.locate.finding);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const fc = await fetch("/data/townships.geojson").then((r) => r.json());
+          const hit = townshipAt(fc, pos.coords.longitude, pos.coords.latitude);
+          if (!hit) return setLocMsg(t.locate.outside);
+          setLocMsg(null);
+          go(hit.area_id);
+        } catch {
+          setLocMsg(t.locate.failed);
+        }
+      },
+      (err) => setLocMsg(err.code === err.PERMISSION_DENIED ? t.locate.denied : t.locate.failed),
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 },
+    );
+  }
 
   return (
-    <div className="relative w-full max-w-md">
-      <label htmlFor="area-search" className="sr-only">Search a township or state</label>
-      <div className="flex items-center gap-3 rounded-full border border-line bg-white px-4 py-3 shadow-[0_1px_0_rgba(23,33,28,0.04)] focus-within:border-ink-3">
-        <SearchIcon className="shrink-0 text-ink-3" />
-        <input
-          id="area-search"
-          value={q}
-          autoComplete="off"
-          onChange={(e) => { setQ(e.target.value); setActive(0); }}
-          onKeyDown={(e) => {
-            if (e.key === "ArrowDown") { e.preventDefault(); setActive((i) => Math.min(i + 1, results.length - 1)); }
-            if (e.key === "ArrowUp") { e.preventDefault(); setActive((i) => Math.max(i - 1, 0)); }
-            if (e.key === "Enter" && results[active]) go(results[active]);
-          }}
-          placeholder="Search a township or state"
-          className="w-full bg-transparent text-[15px] outline-none placeholder:text-ink-3"
-        />
-      </div>
-      {q.trim() && (
-        <ul className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-line bg-white py-1 shadow-[0_16px_40px_-20px_rgba(23,33,28,0.35)]">
-          {results.length === 0 && <li className="px-4 py-3 text-sm text-ink-3">No match. Try a nearby town or the state name.</li>}
-          {results.map((a, i) => (
-            <li key={a.area_id}>
-              <button
-                onClick={() => go(a)}
-                onMouseEnter={() => setActive(i)}
-                className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left ${i === active ? "bg-cell" : ""}`}
-              >
-                <span>
-                  <span className="font-medium">{a.name}</span>
-                  <span className="text-ink-3">
-                    {a.level === "township" && a.state ? `, ${a.state}` : a.level === "state" ? ", state" : ""}
+    <div className="w-full max-w-md">
+      <div className="relative">
+        <label htmlFor="area-search" className="sr-only">{t.search.label}</label>
+        <div className="flex items-center gap-3 rounded-full border border-line bg-white px-4 py-3 shadow-[0_1px_0_rgba(23,33,28,0.04)] focus-within:border-ink-3">
+          <SearchIcon className="shrink-0 text-ink-3" />
+          <input
+            id="area-search"
+            value={q}
+            autoComplete="off"
+            onChange={(e) => { setQ(e.target.value); setActive(0); }}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowDown") { e.preventDefault(); setActive((i) => Math.min(i + 1, results.length - 1)); }
+              if (e.key === "ArrowUp") { e.preventDefault(); setActive((i) => Math.max(i - 1, 0)); }
+              if (e.key === "Enter" && results[active]) go(results[active].area_id);
+            }}
+            placeholder={t.search.placeholder}
+            className="w-full min-w-0 bg-transparent text-[15px] outline-none placeholder:text-ink-3"
+          />
+        </div>
+        {q.trim() && (
+          <ul className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-line bg-white py-1 shadow-[0_16px_40px_-20px_rgba(23,33,28,0.35)]">
+            {results.length === 0 && <li className="px-4 py-3 text-sm text-ink-3">{t.search.none}</li>}
+            {results.map((a, i) => (
+              <li key={a.area_id}>
+                <button
+                  onClick={() => go(a.area_id)}
+                  onMouseEnter={() => setActive(i)}
+                  className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left ${i === active ? "bg-cell" : ""}`}
+                >
+                  <span className="min-w-0">
+                    <span className="font-medium">{a.name}</span>
+                    <span className="text-ink-3">
+                      {a.level === "township" && a.state ? `, ${a.state}` : a.level === "state" ? `, ${t.search.state}` : ""}
+                    </span>
                   </span>
-                </span>
-                <StatusPill status={a.status} />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+                  <StatusPill status={a.status} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <button
+          onClick={locate}
+          className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2.5 text-sm font-medium hover:border-ink-3"
+        >
+          <LocateIcon className="h-4 w-4 shrink-0 text-ember" />
+          {t.locate.button}
+        </button>
+        {locMsg && <span className="text-sm text-ink-2" role="status">{locMsg}</span>}
+      </div>
     </div>
   );
 }

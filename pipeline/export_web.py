@@ -139,6 +139,11 @@ def main() -> None:
         f["properties"] = {"area_id": sid, "name": f["properties"].get("shapeName"),
                            "status": status.get(sid, "normal")}
     (WEB / "townships.geojson").write_text(json.dumps(gj, separators=(",", ":")))
+    try:  # smaller map file for slow mobile connections
+        from slim_geojson import main as slim
+        slim(str(WEB / "townships.geojson"))
+    except Exception as e:
+        print(f"WARNING: map not slimmed ({e})")
 
     # Validation + meta
     val = json.loads((OUT / "validation.json").read_text())

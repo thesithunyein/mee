@@ -108,11 +108,30 @@ export function findAreas(areas: AreaSummary[], q: string): AreaSummary[] {
     .slice(0, 6);
 }
 
-export const LEVEL_TEXT: Record<Status, string> = {
-  normal: "⚪ Normal",
-  elevated: "🟠 Above normal",
-  high: "🔴 Far above normal",
+export type BotLang = "en" | "my";
+
+const LEVELS: Record<BotLang, Record<Status, string>> = {
+  en: { normal: "⚪ Normal", elevated: "🟠 Above normal", high: "🔴 Far above normal" },
+  my: { normal: "⚪ ပုံမှန်", elevated: "🟠 ပုံမှန်ထက် များ", high: "🔴 ပုံမှန်ထက် အလွန်များ" },
 };
+export const levelText = (s: Status, lang: BotLang = "en") => LEVELS[lang][s];
+/** @deprecated use levelText */
+export const LEVEL_TEXT = LEVELS.en;
+
+const MONTHS_MY = ["ဇန်နဝါရီ", "ဖေဖော်ဝါရီ", "မတ်", "ဧပြီ", "မေ", "ဇွန်", "ဇူလိုင်", "ဩဂုတ်", "စက်တင်ဘာ", "အောက်တိုဘာ", "နိုဝင်ဘာ", "ဒီဇင်ဘာ"];
+export function dateText(iso: string, lang: BotLang) {
+  if (lang === "en") return fmtDate(iso);
+  const d = new Date(iso + "T00:00:00Z");
+  return `${d.getUTCDate()} ${MONTHS_MY[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
+
+// Language: saved choice, else Telegram's app language, else English
+export async function chatLang(chatId: number | string, telegramCode?: string): Promise<BotLang> {
+  const saved = await redis<string | null>(["GET", `lang:${chatId}`]);
+  if (saved === "my" || saved === "en") return saved;
+  return telegramCode?.toLowerCase().startsWith("my") ? "my" : "en";
+}
+export const setChatLang = (chatId: number, lang: BotLang) => redis(["SET", `lang:${chatId}`, lang]);
 
 export const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const n = (x: number) => Math.round(x).toLocaleString("en-US");
@@ -125,12 +144,11 @@ export function areaUrl(origin: string, a: AreaSummary) {
   return `${origin}/area/${encodeURIComponent(a.area_id)}`;
 }
 
-export function statusText(a: AreaSummary, meta: Meta, origin: string) {
-  return [
-    `<b>${placeName(a)}</b>`,
-    LEVEL_TEXT[a.status],
-    `Last 7 days: ${n(a.r7)} fires. Normal for this week: up to ${n(a.p75)}.`,
-    `<i>Data to ${fmtDate(meta.last_date)}</i>`,
-    areaUrl(origin, a),
-  ].join("\n");
+export function statusText(a: AreaSummary, meta: Meta, origin: string, lang: BotLang = "en") {
+  const body =
+    lang === "my"
+      ? `နောက်ဆုံး ၇ ရက်: မီးပွိုင့် ${n(a.r7)}။ ဒီအပတ်အတွက် ပုံမှန်: ${n(a.p75)} အထိ။`
+      : `Last 7 days: ${n(a.r7)} fires. Normal for this week: up to ${n(a.p75)}.`;
+  const data = lang === "my" ? `${dateText(meta.last_date, lang)} အထိ ဒေတာ` : `Data to ${dateText(meta.last_date, lang)}`;
+  return [`<b>${placeName(a)}</b>`, levelText(a.status, lang), body, `<i>${data}</i>`, areaUrl(origin, a)].join("\n");
 }

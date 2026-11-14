@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MONTHS, MONTH_START_DOY, fmt, rolling7, doyToLabel } from "@/lib/types";
+import { useLang } from "@/lib/i18n";
+import { MONTH_START_DOY, doyLabelIn, fmt, rolling7 } from "@/lib/types";
 
 interface Props {
   years: number[];
@@ -15,6 +16,7 @@ const H = 300;
 const PAD = { l: 52, r: 12, t: 20, b: 30 };
 
 export default function SeasonChart({ years, calendar, normals, lastDate }: Props) {
+  const { t } = useLang();
   const lastYear = Number(lastDate.slice(0, 4));
   const [year, setYear] = useState(lastYear);
   const [hoverDoy, setHoverDoy] = useState<number | null>(null);
@@ -49,7 +51,7 @@ export default function SeasonChart({ years, calendar, normals, lastDate }: Prop
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-2">
         <label className="flex items-center gap-2">
-          <span className="sr-only">Year</span>
+          <span className="sr-only">{t.chart.year}</span>
           <select
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
@@ -59,7 +61,7 @@ export default function SeasonChart({ years, calendar, normals, lastDate }: Prop
           </select>
         </label>
         <span className="flex items-center gap-2"><span className="h-0.5 w-5 rounded bg-ember" />{year}</span>
-        <span className="flex items-center gap-2"><span className="h-3 w-5 rounded-sm bg-[#FBE9C6]" />Normal range</span>
+        <span className="flex items-center gap-2"><span className="h-3 w-5 rounded-sm bg-[#FBE9C6]" />{t.chart.normalRange}</span>
       </div>
 
       <div className="relative">
@@ -85,7 +87,7 @@ export default function SeasonChart({ years, calendar, normals, lastDate }: Prop
             </g>
           ))}
           {MONTH_START_DOY.map((d, i) => (
-            <text key={d} x={x(d) + 2} y={H - 8} fontSize="11" fill="#8A958F">{MONTHS[i]}</text>
+            <text key={d} x={x(d) + 2} y={H - 8} fontSize="11" fill="#8A958F">{t.monthsShort[i]}</text>
           ))}
           <polygon points={band} fill="#FBE9C6" />
           <polyline points={p50line} fill="none" stroke="#F3A83B" strokeDasharray="3 4" />
@@ -102,9 +104,9 @@ export default function SeasonChart({ years, calendar, normals, lastDate }: Prop
             className="pointer-events-none absolute top-0 rounded-lg border border-line bg-white px-3 py-2 text-xs shadow-[0_8px_24px_-12px_rgba(23,33,28,0.35)]"
             style={{ left: `min(calc(${(x(h) / W) * 100}% + 10px), calc(100% - 170px))` }}
           >
-            <div className="text-ink-3">Week to {doyToLabel(h)}</div>
-            <div className="font-semibold tabular-nums">{fmt(series[h - 1])} fires</div>
-            <div className="tabular-nums text-ink-2">Normal {fmt(normals.p50[h - 1])}</div>
+            <div className="text-ink-3">{t.tip.weekTo(doyLabelIn(h, t.months))}</div>
+            <div className="font-semibold tabular-nums">{t.tip.fires(fmt(series[h - 1]))}</div>
+            <div className="tabular-nums text-ink-2">{t.tip.normal(fmt(normals.p50[h - 1]))}</div>
           </div>
         )}
       </div>

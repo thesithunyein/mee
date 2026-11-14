@@ -27,6 +27,8 @@ export async function GET(req: Request) {
       { command: "start", description: "How Mee works" },
       { command: "list", description: "Places you follow" },
       { command: "stop", description: "Stop all alerts" },
+      { command: "burmese", description: "မြန်မာဘာသာ" },
+      { command: "english", description: "English" },
     ],
   });
   const desc = await tg("setMyDescription", {

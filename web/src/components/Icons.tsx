@@ -37,3 +37,7 @@ export const CalendarIcon = ({ className }: P) => (
 export const SendIcon = ({ className }: P) => (
   <svg {...base} className={className}><path d="M21 3 3 10.5l7 2.5m11-10-8 18-3-8m11-10L10 13" /></svg>
 );
+// Location target
+export const LocateIcon = ({ className }: P) => (
+  <svg {...base} className={className}><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2.5" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>
+);
