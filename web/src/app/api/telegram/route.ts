@@ -1,7 +1,7 @@
 import { placeLabel } from "@/lib/types";
 import {
   alertsConfigured, chatLang, esc, findAreas, follow, followedBy, levelText, loadData, placeName, send,
-  setChatLang, statusText, tg, unfollow, type BotLang,
+  redisPipeline, setChatLang, statusText, tg, unfollow, type BotLang,
 } from "@/lib/alerts";
 
 type From = { language_code?: string };
@@ -116,6 +116,8 @@ async function onText(chatId: number, text: string, from: From | undefined, orig
   if (cmd === "/stop") {
     const ids = await followedBy(chatId);
     for (const id of ids) await unfollow(chatId, id);
+    // Forget this chat entirely: follows (above), its follow list and its language.
+    await redisPipeline([["DEL", `chat:${chatId}`], ["DEL", `lang:${chatId}`]]);
     return send(chatId, s.stopped);
   }
 

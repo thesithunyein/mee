@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Schibsted_Grotesk, Noto_Sans_Myanmar } from "next/font/google";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { LangProvider } from "@/lib/i18n";
@@ -14,10 +14,15 @@ export const metadata: Metadata = {
     description: "When and where Myanmar burns, day by day, from NASA satellite data.",
     url: "https://meefire.app",
     siteName: "Mee",
+    type: "website",
   },
+  twitter: { card: "summary_large_image" },
+  appleWebApp: { title: "Mee", statusBarStyle: "default" },
   title: "Mee · Myanmar fire calendar",
   description: "When and where Myanmar burns, day by day, from NASA satellite fire data. See if this week is normal for your township.",
 };
+
+export const viewport: Viewport = { themeColor: "#F6F7F4" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

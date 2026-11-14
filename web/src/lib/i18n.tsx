@@ -52,6 +52,7 @@ const en = {
     { title: "We compare", text: "Each week is checked against the same week in past years." },
   ],
   how: "How it works",
+  notFound: { title: "This page doesn't exist", text: "The link may be old or mistyped. Search for your township on the map instead." },
   readMethod: "Read the full method",
   faqTitle: "Questions",
   faqMissing: "Have another question?",
@@ -136,6 +137,7 @@ const en = {
     ["How up to date is it?", "Mee updates itself every morning with NASA's latest data. Every page shows the date of its newest data."],
     ["Does it catch every fire?", "No. Satellites can miss small fires, fires under cloud or thick smoke, and fires that start and end between passes. Use Mee to spot patterns and early warnings, and check on the ground before you act."],
     ["Can I use the data?", "Yes. Download it from any township page. Please credit NASA FIRMS and Mee. The code is open source under the MIT license."],
+    ["What do you keep about me?", "Almost nothing. The website has no accounts and no ads, and Use my location runs on your phone: your location is never sent to us. The Telegram bot keeps only your chat number, your language and the townships you follow, so it can send alerts. Send /stop to remove all of it."],
     ["Who made Mee?", "Sithu Nyein, a software engineer in Yangon. Mee is independent and isn't connected to NASA."],
   ] as [string, string][],
 };
@@ -186,6 +188,7 @@ const my: Dict = {
     { title: "နှိုင်းယှဉ်တယ်", text: "အပတ်တိုင်းကို အရင်နှစ်တွေရဲ့ တူညီတဲ့ အပတ်နဲ့ နှိုင်းယှဉ်ပါတယ်။" },
   ],
   how: "ဘယ်လို အလုပ်လုပ်လဲ",
+  notFound: { title: "ဒီစာမျက်နှာ မရှိပါ", text: "လင့်ခ် ဟောင်းနေတာ ဒါမှမဟုတ် မှားရိုက်ထားတာ ဖြစ်နိုင်ပါတယ်။ မြေပုံမှာ သင့်မြို့နယ်ကို ရှာကြည့်ပါ။" },
   readMethod: "နည်းလမ်း အပြည့်အစုံ ဖတ်ရန်",
   faqTitle: "မေးလေ့ရှိတဲ့ မေးခွန်းများ",
   faqMissing: "တခြား မေးစရာ ရှိသေးလား။",
@@ -270,6 +273,7 @@ const my: Dict = {
     ["ဒေတာ ဘယ်လောက် နောက်ဆုံးရလဲ။", "Mee က မနက်တိုင်း NASA ရဲ့ နောက်ဆုံးဒေတာနဲ့ အလိုအလျောက် အပ်ဒိတ်လုပ်ပါတယ်။ စာမျက်နှာတိုင်းမှာ ဘယ်နေ့အထိ ဒေတာလဲ ပြထားပါတယ်။"],
     ["မီးအားလုံးကို မြင်ရလား။", "မမြင်ရပါဘူး။ မီးငယ်တွေ၊ တိမ် ဒါမှမဟုတ် မီးခိုးထူအောက်က မီးတွေ၊ ဂြိုဟ်တု မဖြတ်ခင် စပြီး ငြိမ်းသွားတဲ့ မီးတွေကို လွတ်သွားနိုင်ပါတယ်။ ပုံစံနဲ့ ကြိုတင်သတိပေးချက်အတွက် သုံးပြီး အရေးယူမယ်ဆိုရင် မြေပြင်မှာ စစ်ပါ။"],
     ["ဒေတာကို သုံးလို့ ရလား။", "ရပါတယ်။ မြို့နယ် စာမျက်နှာတိုင်းကနေ ဒေါင်းလို့ ရပါတယ်။ NASA FIRMS နဲ့ Mee ကို ဖော်ပြပေးပါ။ Code က MIT လိုင်စင်နဲ့ open source ပါ။"],
+    ["ကျွန်တော့်အကြောင်း ဘာတွေ သိမ်းထားလဲ။", "ဘာမှ မသိမ်းသလောက်ပါပဲ။ ဝက်ဘ်ဆိုက်မှာ အကောင့်လည်း မရှိ၊ ကြော်ငြာလည်း မရှိပါ။ လက်ရှိနေရာကို သုံးမယ် က သင့်ဖုန်းပေါ်မှာပဲ အလုပ်လုပ်ပြီး တည်နေရာကို ကျွန်တော်တို့ဆီ မပို့ပါ။ Telegram bot က အသိပေးချက် ပို့နိုင်ဖို့ chat နံပါတ်၊ ဘာသာစကားနဲ့ စောင့်ကြည့်နေတဲ့ မြို့နယ်တွေကိုပဲ သိမ်းပါတယ်။ /stop ပို့ရင် အားလုံး ဖျက်ပေးပါတယ်။"],
     ["Mee ကို ဘယ်သူ လုပ်တာလဲ။", "ရန်ကုန်က software engineer Sithu Nyein ပါ။ Mee က လွတ်လပ်တဲ့ project ဖြစ်ပြီး NASA နဲ့ မသက်ဆိုင်ပါ။"],
   ],
 };
