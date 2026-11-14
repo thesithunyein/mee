@@ -88,7 +88,8 @@ mee/
 │   ├── process.py            cleaning, township assignment, daily counts
 │   ├── harmonize.py          calibration, fire index, normals, seasons, validation
 │   ├── export_web.py         writes static JSON to web/public/data
-│   └── update_all.py         one command: download everything, then rebuild
+│   ├── update_all.py         one command: download everything, then rebuild
+│   └── nowcast.py            daily near-real-time update (runs on GitHub Actions)
 ├── web/                      Next.js 16 app (deployed on Vercel)
 │   ├── public/data/          generated data the site and bot read
 │   ├── src/app/              pages + API routes (/api/telegram, /api/cron/alerts)
@@ -132,7 +133,9 @@ python update_all.py   # first run downloads ~26 years of data (1-2 hours), then
 | `python update_all.py --skip-download` | Rebuild from what is already downloaded |
 | `python download_firms.py --availability` | Shows which dates FIRMS has for each satellite |
 
-Raw downloads go to `data/` (git-ignored; several gigabytes). The output goes to `web/public/data`. Commit that folder to publish new data.
+Raw downloads go to `data/` (git-ignored; several gigabytes).
+
+**Daily updates run on their own.** A GitHub Action ([`daily-update.yml`](.github/workflows/daily-update.yml)) runs [`nowcast.py`](pipeline/nowcast.py) every day at 06:10 Yangon time. It downloads the last 10 days of NOAA-20 and NOAA-21 near-real-time data, recomputes the fire index and every area's level with the same rules and calibration as the full pipeline, and commits the result. Vercel redeploys, and the 08:00 alert job messages Telegram followers. It needs one repository secret, `FIRMS_MAP_KEY`. On real data it matches the full pipeline to within 2% for Myanmar's 7-day total. The output goes to `web/public/data`. Commit that folder to publish new data.
 
 ### 3. Telegram alerts (optional)
 

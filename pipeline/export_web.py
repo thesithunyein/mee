@@ -147,6 +147,21 @@ def main() -> None:
     val["weekly"] = vw.to_dict(orient="records")
     (WEB / "validation.json").write_text(json.dumps(val, default=str))
 
+    # Calibration factors, so the daily near-real-time update (nowcast.py) uses the same scale
+    try:
+        fac = pd.read_parquet(OUT / "factors.parquet")
+        fj = {}
+        for src in ("N21", "SNPP", "MODIS"):
+            sub = fac[fac.src == src]
+            fj[src] = {
+                st: {str(int(m)): (None if pd.isna(f) else round(float(f), 4)) for m, f in zip(g.month, g.factor)}
+                for st, g in sub.groupby("state")
+            }
+            fj[f"{src}_national"] = round(float(sub.factor.median()), 4) if len(sub) else None
+        (WEB / "factors.json").write_text(json.dumps(fj, separators=(",", ":")))
+    except Exception as e:  # never block the export over this file
+        print(f"WARNING: factors.json not written ({e})")
+
     meta = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "last_date": str(last),

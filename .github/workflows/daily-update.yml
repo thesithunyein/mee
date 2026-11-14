@@ -1,0 +1,46 @@
+name: Daily fire data update
+
+# Every day at 23:40 UTC (06:10 in Yangon), after both NOAA-20 passes over Myanmar for that UTC day
+# have reached NASA FIRMS. Downloads the last 10 days of near-real-time VIIRS data, updates the
+# site's data, and commits it. Vercel redeploys on the push; the 08:00 Yangon alert job then
+# messages Telegram followers whose township changed level.
+on:
+  schedule:
+    - cron: "40 23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Update data from NASA FIRMS
+        env:
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+        run: python pipeline/nowcast.py
+
+      - name: Publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add web/public/data
+          if git diff --cached --quiet; then
+            echo "No change."
+            exit 0
+          fi
+          last=$(python -c "import json;print(json.load(open('web/public/data/meta.json'))['last_date'])")
+          git commit -m "Daily data to $last"
+          git push
