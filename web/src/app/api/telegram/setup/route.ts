@@ -25,6 +25,8 @@ export async function GET(req: Request) {
   const cmds = await tg("setMyCommands", {
     commands: [
       { command: "start", description: "How it works" },
+      { command: "near", description: "Alerts for fires near you" },
+      { command: "stopnear", description: "Stop nearby fire alerts" },
       { command: "list", description: "Places you follow" },
       { command: "stop", description: "Stop all alerts" },
       { command: "burmese", description: "မြန်မာဘာသာ" },

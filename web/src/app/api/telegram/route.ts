@@ -3,10 +3,11 @@ import {
   alertsConfigured, chatLang, esc, findAreas, follow, followedBy, levelText, loadData, placeName, send,
   redisPipeline, setChatLang, statusText, tg, unfollow, type BotLang,
 } from "@/lib/alerts";
+import { delNear, getNear, getPending, inBox, NEAR_T, RADII, setNear, setPending } from "@/lib/near";
 
 type From = { language_code?: string };
 type Update = {
-  message?: { chat: { id: number }; from?: From; text?: string };
+  message?: { chat: { id: number }; from?: From; text?: string; location?: { latitude: number; longitude: number } };
   callback_query?: { id: string; data?: string; from?: From; message?: { chat: { id: number }; message_id: number } };
 };
 
@@ -18,6 +19,7 @@ const T = {
       "Send me a township or state name, like <i>Hakha</i>, and I'll tell you how this week compares with a usual week.",
       "Tap <b>Follow</b> and I'll message you when fires there pick up, and again when they calm down.",
       "",
+      "/near  alerts for fires near you",
       "/list  places you follow",
       "/stop  stop all alerts",
       "/burmese  မြန်မာဘာသာ",
@@ -44,6 +46,7 @@ const T = {
       "မြို့နယ် ဒါမှမဟုတ် ပြည်နယ်/တိုင်း နာမည်ကို English နဲ့ ပို့ပါ (ဥပမာ <i>Hakha</i>)။ ဒီအပတ် ပုံမှန်နဲ့ ဘယ်လိုလဲ ပြောပြပါမယ်။",
       "<b>စောင့်ကြည့်မယ်</b> ကိုနှိပ်ရင် အဲဒီမှာ မီးများလာတဲ့အခါနဲ့ ပြန်လျော့သွားတဲ့အခါ စာပို့ပေးပါမယ်။",
       "",
+      "/near  သင့်အနီးက မီးအတွက် အသိပေးချက်",
       "/list  စောင့်ကြည့်နေတဲ့ နေရာတွေ",
       "/stop  အသိပေးချက် အားလုံး ရပ်ရန်",
       "/english  English",
@@ -76,6 +79,7 @@ export async function POST(req: Request) {
 
   try {
     if (u.callback_query) await onButton(u.callback_query, origin);
+    else if (u.message?.location) await onLocation(u.message.chat.id, u.message.location, u.message.from);
     else if (u.message?.text) await onText(u.message.chat.id, u.message.text.trim(), u.message.from, origin);
   } catch (e) {
     console.error("telegram update failed", e);
@@ -97,11 +101,27 @@ async function onText(chatId: number, text: string, from: From | undefined, orig
   const s = T[lang];
   if (cmd === "/start" || cmd === "/help") return send(chatId, s.help);
 
+  // ---- Fire near me ----
+  const n = NEAR_T[lang];
+  if (cmd === "/near") {
+    return tg("sendMessage", {
+      chat_id: chatId,
+      text: n.ask,
+      reply_markup: { keyboard: [[{ text: n.share, request_location: true }]], resize_keyboard: true, one_time_keyboard: true },
+    });
+  }
+  if (cmd === "/stopnear") {
+    await delNear(chatId);
+    return send(chatId, n.off);
+  }
+
   const { areas, meta } = await loadData(origin);
 
   if (cmd === "/list") {
     const ids = await followedBy(chatId);
-    if (!ids.length) return send(chatId, s.noneFollowed);
+    const near = await getNear(chatId);
+    if (near) await send(chatId, n.listLine(near.r), [[{ text: n.stopBtn, callback_data: "x:near" }]]);
+    if (!ids.length) return near ? undefined : send(chatId, s.noneFollowed);
     const lines = ids
       .map((id) => areas.find((a) => a.area_id === id))
       .filter((a): a is NonNullable<typeof a> => Boolean(a))
@@ -116,7 +136,8 @@ async function onText(chatId: number, text: string, from: From | undefined, orig
   if (cmd === "/stop") {
     const ids = await followedBy(chatId);
     for (const id of ids) await unfollow(chatId, id);
-    // Forget this chat entirely: follows (above), its follow list and its language.
+    // Forget this chat entirely: follows (above), nearby alert, its follow list and its language.
+    await delNear(chatId);
     await redisPipeline([["DEL", `chat:${chatId}`], ["DEL", `lang:${chatId}`]]);
     return send(chatId, s.stopped);
   }
@@ -128,6 +149,15 @@ async function onText(chatId: number, text: string, from: From | undefined, orig
   if (found.length === 1) return showArea(chatId, found[0].area_id, origin, lang, { areas, meta });
   return send(chatId, s.which,
     found.map((a) => [{ text: a.level === "township" && a.state ? `${placeLabel(a.name)}, ${placeLabel(a.state)}` : placeLabel(a.name), callback_data: `s:${a.area_id}` }]));
+}
+
+async function onLocation(chatId: number, loc: { latitude: number; longitude: number }, from: From | undefined) {
+  const n = NEAR_T[await chatLang(chatId, from?.language_code)];
+  if (!inBox(loc.latitude, loc.longitude)) {
+    return tg("sendMessage", { chat_id: chatId, text: n.outside, reply_markup: { remove_keyboard: true } });
+  }
+  await setPending(chatId, loc.latitude, loc.longitude);
+  return send(chatId, n.radius, [RADII.map((r) => ({ text: n.km(r), callback_data: `n:${r}` }))]);
 }
 
 async function showArea(
@@ -151,6 +181,21 @@ async function onButton(q: NonNullable<Update["callback_query"]>, origin: string
   if (!chatId || !areaId) return tg("answerCallbackQuery", { callback_query_id: q.id });
   const lang = await chatLang(chatId, q.from?.language_code);
   const s = T[lang];
+
+  if (kind === "n" || kind === "x") {
+    const n = NEAR_T[lang];
+    if (kind === "x") {
+      await delNear(chatId);
+      await tg("answerCallbackQuery", { callback_query_id: q.id });
+      return send(chatId, n.off);
+    }
+    const r = Number(areaId);
+    const p = await getPending(chatId);
+    await tg("answerCallbackQuery", { callback_query_id: q.id });
+    if (!p || !RADII.includes(r as (typeof RADII)[number])) return send(chatId, n.expired);
+    await setNear(chatId, { lat: p.lat, lon: p.lon, r, since: Date.now() });
+    return send(chatId, n.on(r));
+  }
 
   if (kind === "s") {
     await tg("answerCallbackQuery", { callback_query_id: q.id });
