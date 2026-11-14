@@ -5,6 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import CalendarHeatmap from "@/components/CalendarHeatmap";
 import AreaSearch from "@/components/AreaSearch";
+import Faq from "@/components/Faq";
 import StatusPill from "@/components/StatusPill";
 import { CalendarIcon, ChevronIcon, MatchIcon, SatelliteIcon } from "@/components/Icons";
 import { fmt, fmtDate, type AreaDetail, type AreaSummary } from "@/lib/types";
@@ -136,6 +137,8 @@ export default function Home() {
           Read the method <ChevronIcon className="h-4 w-4" />
         </Link>
       </section>
+
+      <Faq />
     </div>
   );
 }

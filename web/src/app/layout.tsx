@@ -37,7 +37,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <MeeMark size={18} />
               <span>Fire data from NASA FIRMS. Maps from geoBoundaries (CC BY 4.0).</span>
             </div>
-            <div className="text-ink-3">Independent project. Not affiliated with NASA.</div>
+            <div className="flex gap-5 text-ink-3">
+              <Link href="/#faq" className="hover:text-ink">Questions</Link>
+              <a href="https://github.com/thesithunyein/mee" className="hover:text-ink">Source code</a>
+              <span>Not affiliated with NASA</span>
+            </div>
           </div>
         </footer>
       </body>
