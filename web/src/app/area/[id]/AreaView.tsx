@@ -82,7 +82,7 @@ export default function AreaView() {
         <div className="mt-10 grid gap-8 border-y border-line py-8 sm:grid-cols-[1.3fr_repeat(4,1fr)]">
           <div>
             <div className="text-sm text-ink-2">Last 7 days</div>
-            <div className="mt-1 text-5xl font-semibold tabular-nums tracking-tight">{fmt(a.status.r7)}</div>
+            <div className="mt-1 text-5xl font-semibold tracking-tight">{fmt(a.status.r7)}</div>
             <div className="mt-1 text-sm text-ink-2">
               {ratio == null ? "No normal yet" : `Normal is about ${fmt(a.status.p50)}`}
             </div>
@@ -90,7 +90,7 @@ export default function AreaView() {
           {stats.map(([k, v]) => (
             <div key={k} className="sm:border-l sm:border-line sm:pl-6">
               <div className="text-sm text-ink-2">{k}</div>
-              <div className="mt-1 text-2xl font-semibold tabular-nums">{v}</div>
+              <div className="mt-1 text-2xl font-semibold">{v}</div>
             </div>
           ))}
         </div>

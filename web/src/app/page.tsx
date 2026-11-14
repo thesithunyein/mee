@@ -30,7 +30,7 @@ export default function Home() {
     () =>
       areas
         .filter((a) => a.level === "township" && a.status !== "normal")
-        .sort((a, b) => b.r7 / Math.max(b.p90, 1) - a.r7 / Math.max(a.p90, 1)),
+        .sort((a, b) => (a.status === b.status ? 0 : a.status === "high" ? -1 : 1) || b.r7 - b.p75 - (a.r7 - a.p75)),
     [areas],
   );
 
@@ -84,7 +84,7 @@ export default function Home() {
                 <span className="text-sm text-paper/70">Myanmar, last 7 days</span>
                 <StatusPill status={mmr.status.level} />
               </div>
-              <div className="mt-6 text-6xl font-semibold tabular-nums tracking-tight">{fmt(mmr.status.r7)}</div>
+              <div className="mt-6 text-6xl font-semibold tracking-tight">{fmt(mmr.status.r7)}</div>
               <div className="mt-2 text-paper/70">fires. Normal for this week is about {fmt(mmr.status.p50)}.</div>
               <div className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-[#F6B44B] group-hover:underline">
                 See the full calendar <ChevronIcon className="h-4 w-4" />
@@ -105,7 +105,7 @@ export default function Home() {
                     <span className="text-ink-3"> {a.state}</span>
                   </span>
                   <span className="flex shrink-0 items-center gap-3">
-                    <span className="text-sm tabular-nums text-ink-2">{fmt(a.r7)} <span className="text-ink-3">/ {fmt(a.p75)}</span></span>
+                    <span className="hidden text-sm tabular-nums text-ink-2 sm:inline">{fmt(a.r7)} fires</span>
                     <StatusPill status={a.status} />
                   </span>
                 </Link>

@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/" className="flex items-center gap-2.5" aria-label="Mee home">
               <MeeMark size={26} />
               <span className="text-lg font-semibold tracking-tight">Mee</span>
-              <span className="font-my text-sm text-ink-3">မီး</span>
+              <span className="font-my text-base leading-none text-ink-2">မီး</span>
             </Link>
             <div className="flex gap-1 text-sm">
               <Link href="/" className="rounded-full px-3 py-1.5 text-ink-2 hover:bg-cell hover:text-ink">Map</Link>
