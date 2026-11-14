@@ -16,6 +16,8 @@ export default function AreaView() {
   const { t } = useLang();
   const [a, setA] = useState<AreaDetail | null>(null);
   const [err, setErr] = useState(false);
+  // A township on the map with no fires at all has no data file; show its name instead of "not found".
+  const [noFire, setNoFire] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -23,7 +25,17 @@ export default function AreaView() {
       fetch("/data/area/MMR.json").then((r) => r.json()),
     ])
       .then(([area, national]: [AreaDetail, AreaDetail]) => setA(onlyYears(area, observedYears(national))))
-      .catch(() => setErr(true));
+      .catch(() => {
+        setErr(true);
+        const want = decodeURIComponent(id);
+        fetch("/data/townships.geojson")
+          .then((r) => r.json())
+          .then((fc: { features: { properties: { area_id: string; name: string } }[] }) => {
+            const f = fc.features.find((x) => x.properties.area_id === want);
+            if (f) setNoFire(placeLabel(f.properties.name));
+          })
+          .catch(() => {});
+      });
   }, [id]);
 
   const complete = useMemo(() => (a ? a.seasons.filter((s) => s.complete_year && s.total > 0) : []), [a]);
@@ -73,9 +85,14 @@ export default function AreaView() {
   if (err)
     return (
       <div className="py-20 text-center">
-        <h1 className="text-2xl font-semibold">{t.area.notFoundTitle}</h1>
-        <p className="mt-2 text-ink-2">{t.area.notFoundText}</p>
-        <Link href="/" className="mt-6 inline-block rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper">{t.area.backToMap}</Link>
+        <h1 className="text-2xl font-semibold">{noFire ? t.area.noFireTitle(noFire) : t.area.notFoundTitle}</h1>
+        <p className="mx-auto mt-2 max-w-md text-ink-2">{noFire ? t.area.noFireText : t.area.notFoundText}</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link href="/" className="inline-block rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper">{t.area.backToMap}</Link>
+          {noFire && (
+            <Link href="/area/MMR" className="inline-block rounded-full border border-line bg-white px-5 py-2.5 text-sm font-medium">{t.area.seeMyanmar}</Link>
+          )}
+        </div>
       </div>
     );
   if (!a)

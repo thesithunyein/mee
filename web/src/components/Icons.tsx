@@ -16,21 +16,28 @@ export const BackIcon = ({ className }: P) => (
 export const ChevronIcon = ({ className }: P) => (
   <svg {...base} className={className}><path d="M9 6l6 6-6 6" /></svg>
 );
-// Satellite: body with two solar panels
+// Satellite above a flame: "satellites spot fires"
 export const SatelliteIcon = ({ className }: P) => (
   <svg {...base} className={className}>
-    <rect x="9.5" y="9.5" width="5" height="5" rx="1" transform="rotate(45 12 12)" />
-    <path d="M7.8 7.8 4.6 4.6M3 7.5l4.5-4.5M16.2 16.2l3.2 3.2M16.5 21l4.5-4.5" />
+    <rect x="10" y="2.5" width="4" height="5" rx="1" />
+    <rect x="2.5" y="3.5" width="5.5" height="3" rx="0.6" />
+    <rect x="16" y="3.5" width="5.5" height="3" rx="0.6" />
+    <path d="M8 5h2M14 5h2" />
+    <path d="M12 21.5c-2.5 0-4-1.7-4-3.8 0-2.3 1.9-3.4 2.5-5.7.9.9 1.4 1.8 1.5 2.9.9-.7 1.4-1.6 1.5-2.7 1.6 1.3 2.5 3.2 2.5 5.1 0 2.5-1.7 4.2-4 4.2Z" />
   </svg>
 );
-// Scales: matching sensors to one unit
+// Uneven bars, then even bars: "line the satellites up"
 export const MatchIcon = ({ className }: P) => (
-  <svg {...base} className={className}><path d="M12 4v16M6 20h12M5 8h14M5 8l-2.5 6h5L5 8Zm14 0-2.5 6h5L19 8Z" /></svg>
+  <svg {...base} className={className}>
+    <path d="M3 20v-5M6 20v-11M9 20v-7" />
+    <path d="M15 20v-8M18 20v-8M21 20v-8" />
+  </svg>
 );
+// Calendar with one day marked: "compare with the same week in past years"
 export const CalendarIcon = ({ className }: P) => (
   <svg {...base} className={className}>
     <rect x="3.5" y="5" width="17" height="15" rx="2" /><path d="M3.5 10h17M8 3v4M16 3v4" />
-    <path d="M8 14h2M12 14h2M16 14h0.5M8 17h2" />
+    <rect x="13" y="13" width="4" height="4" rx="0.8" fill="currentColor" stroke="none" />
   </svg>
 );
 // Paper plane (messaging)

@@ -128,7 +128,7 @@ export default function Home() {
             <li key={s.title}>
               <div className="flex items-center gap-3">
                 <span className="grid h-10 w-10 place-items-center rounded-full border border-line bg-white text-ember">
-                  <Icon />
+                  <Icon className="h-5 w-5" />
                 </span>
                 <span className="text-sm tabular-nums text-ink-3">{i + 1}</span>
               </div>

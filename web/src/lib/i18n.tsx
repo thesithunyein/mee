@@ -10,7 +10,7 @@ const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"
 
 const en = {
   nav: { map: "Map", myanmar: "Myanmar", how: "How it works" },
-  footer: { credit: "Fire data from NASA FIRMS. Township maps from geoBoundaries (CC BY 4.0).", questions: "Questions", source: "Source code", notNasa: "Not connected to NASA" },
+  footer: { credit: "Fire data from NASA FIRMS. Township maps from geoBoundaries (CC BY 4.0).", questions: "Questions", source: "Source code", notNasa: "Not an official NASA website" },
   status: { normal: "Normal", elevated: "Higher than usual", high: "Much higher than usual" } as Record<Status, string>,
   hero: {
     title: "When does Myanmar burn?",
@@ -101,6 +101,9 @@ const en = {
     soFar: "so far",
     notFoundTitle: "No fires recorded here",
     notFoundText: "Satellites haven't seen fires in this area, or the link is wrong.",
+    noFireTitle: (n: string) => `${n}: no fires recorded`,
+    noFireText: "Satellites haven't seen a single fire in this township since 2001. It is mostly city, so there is nothing to track here.",
+    seeMyanmar: "See all of Myanmar",
     backToMap: "Back to the map",
   },
   summary: {
@@ -141,7 +144,7 @@ export type Dict = typeof en;
 
 const my: Dict = {
   nav: { map: "မြေပုံ", myanmar: "မြန်မာ", how: "ဘယ်လို အလုပ်လုပ်လဲ" },
-  footer: { credit: "မီးဒေတာက NASA FIRMS ကပါ။ မြို့နယ်မြေပုံက geoBoundaries (CC BY 4.0) ကပါ။", questions: "မေးခွန်းများ", source: "Source code", notNasa: "NASA နဲ့ မသက်ဆိုင်ပါ" },
+  footer: { credit: "မီးဒေတာက NASA FIRMS ကပါ။ မြို့နယ်မြေပုံက geoBoundaries (CC BY 4.0) ကပါ။", questions: "မေးခွန်းများ", source: "Source code", notNasa: "NASA ရဲ့ တရားဝင် ဝက်ဘ်ဆိုက် မဟုတ်ပါ" },
   status: { normal: "ပုံမှန်", elevated: "ပုံမှန်ထက် များ", high: "ပုံမှန်ထက် အများကြီး များ" },
   hero: {
     title: "မြန်မာပြည် ဘယ်အချိန် မီးလောင်လဲ",
@@ -232,6 +235,9 @@ const my: Dict = {
     soFar: "ယခုထိ",
     notFoundTitle: "ဒီနေရာမှာ မီးမှတ်တမ်း မရှိပါ",
     notFoundText: "ဂြိုဟ်တုတွေ ဒီနေရာမှာ မီးမတွေ့ခဲ့ပါ၊ ဒါမှမဟုတ် လင့်ခ် မှားနေပါတယ်။",
+    noFireTitle: (n) => `${n}: မီးမှတ်တမ်း မရှိပါ`,
+    noFireText: "၂၀၀၁ ကစပြီး ဒီမြို့နယ်မှာ ဂြိုဟ်တုတွေ မီးတစ်ခုမှ မတွေ့ခဲ့ပါ။ မြို့ပြ ဧရိယာ အများစုဖြစ်လို့ စောင့်ကြည့်စရာ မရှိပါ။",
+    seeMyanmar: "မြန်မာပြည် တစ်ခုလုံး ကြည့်ရန်",
     backToMap: "မြေပုံကို ပြန်သွားရန်",
   },
   summary: {
