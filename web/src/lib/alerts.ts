@@ -112,8 +112,8 @@ export function findAreas(areas: AreaSummary[], q: string): AreaSummary[] {
 export type BotLang = "en" | "my";
 
 const LEVELS: Record<BotLang, Record<Status, string>> = {
-  en: { normal: "⚪ Normal", elevated: "🟠 Above normal", high: "🔴 Far above normal" },
-  my: { normal: "⚪ ပုံမှန်", elevated: "🟠 ပုံမှန်ထက် များ", high: "🔴 ပုံမှန်ထက် အလွန်များ" },
+  en: { normal: "⚪ Normal", elevated: "🟠 Higher than usual", high: "🔴 Much higher than usual" },
+  my: { normal: "⚪ ပုံမှန်", elevated: "🟠 ပုံမှန်ထက် များ", high: "🔴 ပုံမှန်ထက် အများကြီး များ" },
 };
 export const levelText = (s: Status, lang: BotLang = "en") => LEVELS[lang][s];
 /** @deprecated use levelText */
@@ -148,8 +148,8 @@ export function areaUrl(origin: string, a: AreaSummary) {
 export function statusText(a: AreaSummary, meta: Meta, origin: string, lang: BotLang = "en") {
   const body =
     lang === "my"
-      ? `နောက်ဆုံး ၇ ရက်: မီးပွိုင့် ${n(a.r7)}။ ဒီအပတ်အတွက် ပုံမှန်: ${n(a.p75)} အထိ။`
-      : `Last 7 days: ${n(a.r7)} fires. Normal for this week: up to ${n(a.p75)}.`;
-  const data = lang === "my" ? `${dateText(meta.last_date, lang)} အထိ ဒေတာ` : `Data to ${dateText(meta.last_date, lang)}`;
+      ? `နောက်ဆုံး ၇ ရက်မှာ မီးပွိုင့် ${n(a.r7)} ခု။ ဒီအချိန်မှာ ပုံမှန်ဆို ${n(a.p75)} ခုထိ ရှိတတ်ပါတယ်။`
+      : `${n(a.r7)} fires in the last 7 days. A usual week at this time has up to ${n(a.p75)}.`;
+  const data = lang === "my" ? `${dateText(meta.last_date, lang)} အထိ ဒေတာ` : `Data up to ${dateText(meta.last_date, lang)}`;
   return [`<b>${placeName(a)}</b>`, levelText(a.status, lang), body, `<i>${data}</i>`, areaUrl(origin, a)].join("\n");
 }

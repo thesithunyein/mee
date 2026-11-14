@@ -23,15 +23,15 @@ export default function Validation() {
   if (!v || v.r_cal == null) return null;
 
   const rows: [string, string, string][] = [
-    ["Weekly match with NOAA-20 (correlation)", v.r_raw?.toFixed(2) ?? "–", v.r_cal?.toFixed(2) ?? "–"],
-    ["Typical weekly error", pct(v.mape_raw), pct(v.mape_cal)],
-    ["Error in national yearly total", pct(v.national_annual_error_raw), pct(v.national_annual_error_cal)],
+    ["How well the weeks line up (correlation)", v.r_raw?.toFixed(2) ?? "–", v.r_cal?.toFixed(2) ?? "–"],
+    ["Usual error per week", pct(v.mape_raw), pct(v.mape_cal)],
+    ["Error in Myanmar's yearly total", pct(v.national_annual_error_raw), pct(v.national_annual_error_cal)],
   ];
   return (
     <section className="mt-16">
-      <h2 className="text-2xl font-semibold tracking-tight">Does the scaling work?</h2>
+      <h2 className="text-2xl font-semibold tracking-tight">Does it work?</h2>
       <p className="mt-2 leading-relaxed text-ink-2">
-        We left {v.holdout_year} out, scaled MODIS using the other years only, and compared it with what NOAA-20 really saw.
+        We hid {v.holdout_year}, worked out the scaling from the other years only, then checked how close scaled MODIS came to what NOAA-20 actually saw that year.
       </p>
       <table className="mt-6 w-full text-left text-sm tabular-nums">
         <thead className="text-ink-3">

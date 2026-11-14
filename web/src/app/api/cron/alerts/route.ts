@@ -42,19 +42,19 @@ export async function GET(req: Request) {
       const lang = await chatLang(chat);
       const text = (lang === "my"
         ? [
-            up ? `<b>မီးသတိပေးချက်: ${placeName(a)}</b>` : `<b>အပ်ဒိတ်: ${placeName(a)}</b>`,
+            up ? `<b>မီးသတိပေးချက်: ${placeName(a)}</b>` : `<b>${placeName(a)}: မီးလျော့သွားပါပြီ</b>`,
             levelText(a.status, lang),
             up
-              ? `နောက်ဆုံး ၇ ရက်တွင် မီးပွိုင့် ${fires}။ ဒီအပတ်အတွက် ပုံမှန်: ${normal} အထိ။`
-              : "ယခင်အပ်ဒိတ်ထက် မီးလောင်မှု လျော့ကျသွားသည်။",
+              ? `နောက်ဆုံး ၇ ရက်မှာ မီးပွိုင့် ${fires} ခု။ ဒီအချိန်မှာ ပုံမှန်ဆို ${normal} ခုထိပဲ ရှိတတ်ပါတယ်။`
+              : "နောက်ဆုံး အသိပေးချက်ထက် မီးလောင်မှု လျော့သွားပါပြီ။",
             areaUrl(origin, a),
           ]
         : [
-            up ? `<b>Fire alert: ${placeName(a)}</b>` : `<b>Update: ${placeName(a)}</b>`,
+            up ? `<b>Fire alert: ${placeName(a)}</b>` : `<b>${placeName(a)}: fires have eased</b>`,
             levelText(a.status, lang),
             up
-              ? `${fires} fires in the last 7 days. Normal for this week is up to ${normal}.`
-              : "Fire activity has dropped since the last update.",
+              ? `${fires} fires in the last 7 days. A usual week at this time has up to ${normal}.`
+              : "There are fewer fires than at the last alert.",
             areaUrl(origin, a),
           ]).join("\n");
       const r = await send(chat, text);
@@ -74,12 +74,12 @@ export async function GET(req: Request) {
       .sort((a, b) => b.r7 - b.p90 - (a.r7 - a.p90));
     const text = high.length
       ? [
-          `<b>Townships far above normal</b> (7 days to ${meta.last_date})`,
+          `<b>Townships with much more fire than usual</b> (7 days to ${meta.last_date})`,
           ...high.slice(0, 15).map((a) => `🔴 ${placeName(a)}: ${Math.round(a.r7)} fires`),
           high.length > 15 ? `and ${high.length - 15} more` : "",
           origin,
         ].filter(Boolean).join("\n")
-      : `No township is far above normal this week (data to ${meta.last_date}).\n${origin}`;
+      : `No township has much more fire than usual this week (data to ${meta.last_date}).\n${origin}`;
     channel = (await send(channelId, text)).ok;
   }
 

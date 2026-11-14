@@ -24,7 +24,7 @@ export async function GET(req: Request) {
   });
   const cmds = await tg("setMyCommands", {
     commands: [
-      { command: "start", description: "How Mee works" },
+      { command: "start", description: "How it works" },
       { command: "list", description: "Places you follow" },
       { command: "stop", description: "Stop all alerts" },
       { command: "burmese", description: "မြန်မာဘာသာ" },
@@ -32,7 +32,7 @@ export async function GET(req: Request) {
     ],
   });
   const desc = await tg("setMyDescription", {
-    description: "Fire alerts for Myanmar townships, from NASA satellite data. Send a township name to start.",
+    description: "Free fire alerts for every township in Myanmar, from NASA satellite data. Send a township name to start. မြို့နယ်နာမည် ပို့ပြီး စလိုက်ပါ။",
   });
   const me = await tg("getMe", {});
   return Response.json({ webhook: hook, commands: cmds.ok, description: desc.ok, bot: me.result });

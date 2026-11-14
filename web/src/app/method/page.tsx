@@ -6,31 +6,31 @@ export const metadata: Metadata = { title: "How it works · Mee" };
 
 const STEPS = [
   {
-    title: "Collect every fire detection",
+    title: "Get every fire the satellites saw",
     text: "Mee downloads all active-fire detections over Myanmar from NASA FIRMS: MODIS on Terra and Aqua since 2000, and VIIRS on Suomi NPP, NOAA-20 and NOAA-21 since 2012.",
   },
   {
-    title: "Keep only real vegetation fires",
-    text: "Detections flagged as gas flares, volcanoes or other static heat are removed. Low-confidence detections are dropped. Repeats are counted once.",
+    title: "Keep only real fires on the land",
+    text: "Gas flares, volcanoes and factories are taken out. So are detections the satellite isn't sure about. If the same spot is seen twice, it counts once.",
   },
   {
-    title: "Put every satellite on one scale",
-    text: "VIIRS sees far more small fires than MODIS. On days when both fly, Mee measures the gap for each state and month, then scales every satellite to match NOAA-20.",
+    title: "Put all satellites on one scale",
+    text: "VIIRS sees far more small fires than MODIS. On days when both were flying, Mee measures the difference for each state and month, then scales every satellite to match NOAA-20.",
   },
   {
     title: "Build the calendar",
     text: "The scaled counts are added up per township, per day. When several VIIRS satellites cover a day, Mee uses their average. Before 2012, scaled MODIS fills in.",
   },
   {
-    title: "Define normal",
-    text: "For each date, Mee looks at the 7-day total on the same dates in every past year. The middle value is normal. Above the 75th percentile is above normal. Above the 90th is far above normal.",
+    title: "Work out what normal looks like",
+    text: "For each date, Mee looks at the 7-day total on the same dates in every past year. The middle value is normal. Busier than 3 in 4 past years is higher than usual. Busier than 9 in 10 is much higher than usual.",
   },
 ];
 
 const LIMITS = [
-  "Satellites only see fires burning when they pass over. Cloud and smoke can hide fires.",
-  "One count is one hot pixel, not one fire. A large fire can show as many pixels.",
-  "Terra and Aqua will stop working in 2027, and Suomi NPP data stopped in November 2026. The scaling step is what keeps the record consistent after that.",
+  "Satellites only see fires that are burning when they pass over. Cloud and smoke can hide fires.",
+  "One count is one hot spot, not one fire. A big fire can show up as many hot spots.",
+  "Terra and Aqua stop in 2027, and Suomi NPP stopped in November 2026. Because everything is already on the NOAA-20 scale, the record stays consistent after they're gone.",
 ];
 
 export default function MethodPage() {
@@ -38,7 +38,7 @@ export default function MethodPage() {
     <article className="mx-auto max-w-2xl">
       <h1 className="text-4xl font-semibold tracking-[-0.03em] sm:text-5xl">How it works</h1>
       <p className="mt-5 text-lg leading-relaxed text-ink-2">
-        Five satellites have watched Myanmar&apos;s fires, each with a different eye. Mee turns them into one record you can compare year to year.
+        Five satellites have recorded Myanmar&apos;s fires since 2000, but each one sees fire differently. Here&apos;s how Mee turns them into one record you can compare from year to year.
       </p>
 
       <ol className="mt-14 space-y-10">
