@@ -62,14 +62,14 @@ def build_detections(con: duckdb.DuckDBPyConnection) -> None:
     log(f"reading {len(files):,} CSV chunks")
     glob = str(RAW / "*" / "*.csv").replace("\\", "/")
 
-    # Read everything as text first: column types differ between MODIS and VIIRS.
-    con.execute(f"""
-        CREATE OR REPLACE TABLE raw AS
-        SELECT * FROM read_csv('{glob}', all_varchar=true, union_by_name=true,
-                               filename=true, header=true, ignore_errors=true)
-    """)
-    cols = {r[0] for r in con.execute("DESCRIBE raw").fetchall()}
+    # One streaming pass: read as text (MODIS and VIIRS columns differ), keep only the
+    # columns we use and only points near Myanmar. Never materialise the full raw table:
+    # 20M+ rows of every column as text runs a laptop out of memory.
+    src = f"read_csv('{glob}', all_varchar=true, union_by_name=true, filename=true, header=true, ignore_errors=true)"
+    cols = {r[0] for r in con.execute(f"DESCRIBE SELECT * FROM {src}").fetchall()}
     type_expr = "type" if "type" in cols else "NULL"
+    w, s_, e, n = MMR_BBOX
+    pad = 0.5
 
     con.execute(f"""
         CREATE OR REPLACE TABLE det AS
@@ -85,7 +85,7 @@ def build_detections(con: duckdb.DuckDBPyConnection) -> None:
             TRY_CAST(frp AS DOUBLE)       AS frp,
             daynight,
             {type_expr}                   AS type_raw
-          FROM raw
+          FROM {src}
         )
         SELECT
           source,
@@ -97,9 +97,11 @@ def build_detections(con: duckdb.DuckDBPyConnection) -> None:
             WHEN source LIKE 'VIIRS_NOAA21%' THEN 'VIIRS_NOAA21'
           END AS stream,
           CASE WHEN source LIKE '%_SP' THEN 'SP' ELSE 'NRT' END AS product,
-          lat, lon, acq_date, acq_time, frp, daynight, conf_raw, type_raw
+          lat, lon, acq_date, acq_time, frp, daynight, conf_raw, type_raw, sat_raw
         FROM t
-        WHERE lat IS NOT NULL AND lon IS NOT NULL AND acq_date IS NOT NULL
+        WHERE acq_date IS NOT NULL
+          AND lat BETWEEN {s_ - pad} AND {n + pad}
+          AND lon BETWEEN {w - pad} AND {e + pad}
     """)
     n_all = con.execute("SELECT count(*) FROM det").fetchone()[0]
 
@@ -123,11 +125,7 @@ def build_detections(con: duckdb.DuckDBPyConnection) -> None:
 
     unknown = con.execute("SELECT count(*) FROM det WHERE stream IS NULL").fetchone()[0]
     if unknown:
-        codes = con.execute("""
-            SELECT DISTINCT regexp_extract(replace(filename, '\\', '/'), '/raw/([^/]+)/', 1) AS source,
-                   upper(trim(satellite)) AS sat
-            FROM raw LIMIT 20
-        """).fetchall()
+        codes = con.execute("SELECT DISTINCT source, sat_raw FROM det WHERE stream IS NULL LIMIT 20").fetchall()
         log(f"WARNING: {unknown:,} rows with unknown satellite code. Seen (source, satellite): {codes}")
 
 
@@ -211,7 +209,17 @@ def sanity(con: duckdb.DuckDBPyConnection) -> None:
 
 if __name__ == "__main__":
     t0 = time.time()
-    con = duckdb.connect()
+    # Work database on disk, with a memory cap and a spill folder, so the full
+    # 25-year history fits on an ordinary laptop.
+    work = OUT / "work.duckdb"
+    for f in (work, OUT / "work.duckdb.wal"):
+        f.unlink(missing_ok=True)
+    con = duckdb.connect(str(work))
+    (OUT / "duckdb_tmp").mkdir(exist_ok=True)
+    con.execute(f"SET temp_directory = '{(OUT / 'duckdb_tmp').as_posix()}'")
+    con.execute("SET memory_limit = '3GB'")
+    con.execute("SET threads = 4")
+    con.execute("SET preserve_insertion_order = false")
     build_detections(con)
     build_cell_lookup(con)
     build_aggregates(con)
