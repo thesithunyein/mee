@@ -9,7 +9,7 @@ import StatusPill from "@/components/StatusPill";
 import TelegramCta from "@/components/TelegramCta";
 import { BackIcon, DownloadIcon } from "@/components/Icons";
 import { useLang, type Dict } from "@/lib/i18n";
-import { doyLabelIn, fmt, observedYears, onlyYears, type AreaDetail } from "@/lib/types";
+import { doyLabelIn, fmt, observedYears, onlyYears, placeLabel, type AreaDetail } from "@/lib/types";
 
 export default function AreaView() {
   const { id } = useParams<{ id: string }>();
@@ -78,12 +78,12 @@ export default function AreaView() {
           <BackIcon className="h-4 w-4" /> {t.area.back}
         </Link>
         <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
-          <h1 className="text-4xl font-semibold tracking-[-0.03em] sm:text-5xl">{a.name}</h1>
+          <h1 className="text-4xl font-semibold tracking-[-0.03em] sm:text-5xl">{placeLabel(a.name)}</h1>
           <StatusPill status={a.status.level} />
-          <span className="sm:ml-auto"><TelegramCta place={a.name} /></span>
+          <span className="sm:ml-auto"><TelegramCta place={placeLabel(a.name)} /></span>
         </div>
         <p className="mt-2 flex flex-wrap gap-x-5 text-ink-2">
-          <span>{a.level === "township" ? t.area.township(a.state ?? "") : a.level === "state" ? t.area.state : t.area.country}</span>
+          <span>{a.level === "township" ? t.area.township(placeLabel(a.state)) : a.level === "state" ? t.area.state : t.area.country}</span>
           <span className="text-ink-3">{t.area.dataTo(t.date(a.last_date))}</span>
         </p>
         {summary && (
@@ -201,7 +201,7 @@ const unshift = (d: number) => (d < 1 ? d + 366 : d);
 
 function summarize(a: AreaDetail, t: Dict): string | null {
   const today = t.date(a.last_date, false);
-  const first = t.summary.level(a.name, a.status.level, today);
+  const first = t.summary.level(placeLabel(a.name), a.status.level, today);
   const seasons = a.seasons.filter((s) => s.complete_year && s.total > 0 && s.start_date && s.peak_date && s.end_date);
   if (seasons.length < 3) return first;
   const start = Math.round(median(seasons.map((s) => shift(doyOf(s.start_date!)))));

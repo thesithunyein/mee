@@ -115,3 +115,7 @@ export function doyLabelIn(doy: number, months: string[]): string {
   while (m > 0 && MONTH_START_DOY[m] > doy) m--;
   return `${doy - MONTH_START_DOY[m] + 1} ${months[m]}`;
 }
+
+// Spelling fixes for names in the boundary data (ids stay unchanged)
+const NAME_FIX: Record<string, string> = { Saigang: "Sagaing", Tanitharyi: "Tanintharyi" };
+export const placeLabel = (s?: string | null): string => (s ? (NAME_FIX[s] ?? s) : "");

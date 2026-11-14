@@ -6,7 +6,7 @@
 //   KV_REST_API_URL / KV_REST_API_TOKEN   (or UPSTASH_REDIS_REST_URL / _TOKEN)
 //   TELEGRAM_CHANNEL_ID       optional: public channel for a daily summary, e.g. @mee_fire
 import type { AreaSummary, Meta, Status } from "@/lib/types";
-import { fmtDate } from "@/lib/types";
+import { fmtDate, placeLabel } from "@/lib/types";
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN ?? "";
 const REDIS_URL = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL ?? "";
@@ -100,11 +100,12 @@ export async function loadData(origin: string): Promise<{ areas: AreaSummary[]; 
 export function findAreas(areas: AreaSummary[], q: string): AreaSummary[] {
   const s = q.trim().toLowerCase();
   if (s.length < 2) return [];
-  const exact = areas.filter((a) => a.name.toLowerCase() === s);
+  const nm = (a: AreaSummary) => placeLabel(a.name).toLowerCase();
+  const exact = areas.filter((a) => nm(a) === s || a.name.toLowerCase() === s);
   if (exact.length) return exact;
   return areas
-    .filter((a) => a.name.toLowerCase().includes(s) || (a.level === "state" && a.state?.toLowerCase() === s))
-    .sort((a, b) => Number(!a.name.toLowerCase().startsWith(s)) - Number(!b.name.toLowerCase().startsWith(s)))
+    .filter((a) => nm(a).includes(s) || (a.level === "state" && placeLabel(a.state).toLowerCase() === s))
+    .sort((a, b) => Number(!nm(a).startsWith(s)) - Number(!nm(b).startsWith(s)))
     .slice(0, 6);
 }
 
@@ -137,7 +138,7 @@ export const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;")
 const n = (x: number) => Math.round(x).toLocaleString("en-US");
 
 export function placeName(a: AreaSummary) {
-  return a.level === "township" && a.state ? `${esc(a.name)}, ${esc(a.state)}` : esc(a.name);
+  return a.level === "township" && a.state ? `${esc(placeLabel(a.name))}, ${esc(placeLabel(a.state))}` : esc(placeLabel(a.name));
 }
 
 export function areaUrl(origin: string, a: AreaSummary) {

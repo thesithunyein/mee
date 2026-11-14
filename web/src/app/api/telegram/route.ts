@@ -1,3 +1,4 @@
+import { placeLabel } from "@/lib/types";
 import {
   alertsConfigured, chatLang, esc, findAreas, follow, followedBy, levelText, loadData, placeName, send,
   setChatLang, statusText, tg, unfollow, type BotLang,
@@ -124,7 +125,7 @@ async function onText(chatId: number, text: string, from: From | undefined, orig
   if (!found.length) return send(chatId, s.noMatch);
   if (found.length === 1) return showArea(chatId, found[0].area_id, origin, lang, { areas, meta });
   return send(chatId, s.which,
-    found.map((a) => [{ text: a.level === "township" && a.state ? `${a.name}, ${a.state}` : a.name, callback_data: `s:${a.area_id}` }]));
+    found.map((a) => [{ text: a.level === "township" && a.state ? `${placeLabel(a.name)}, ${placeLabel(a.state)}` : placeLabel(a.name), callback_data: `s:${a.area_id}` }]));
 }
 
 async function showArea(

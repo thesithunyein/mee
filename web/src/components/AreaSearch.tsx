@@ -6,7 +6,7 @@ import { LocateIcon, SearchIcon } from "@/components/Icons";
 import StatusPill from "@/components/StatusPill";
 import { useLang } from "@/lib/i18n";
 import { townshipAt } from "@/lib/pip";
-import type { AreaSummary } from "@/lib/types";
+import { placeLabel, type AreaSummary } from "@/lib/types";
 
 export default function AreaSearch({ areas }: { areas: AreaSummary[] }) {
   const router = useRouter();
@@ -19,8 +19,8 @@ export default function AreaSearch({ areas }: { areas: AreaSummary[] }) {
     const s = q.trim().toLowerCase();
     if (!s) return [];
     return areas
-      .filter((a) => a.name?.toLowerCase().includes(s) || a.state?.toLowerCase().includes(s))
-      .sort((a, b) => Number(!a.name.toLowerCase().startsWith(s)) - Number(!b.name.toLowerCase().startsWith(s)))
+      .filter((a) => placeLabel(a.name).toLowerCase().includes(s) || placeLabel(a.state).toLowerCase().includes(s))
+      .sort((a, b) => Number(!placeLabel(a.name).toLowerCase().startsWith(s)) - Number(!placeLabel(b.name).toLowerCase().startsWith(s)))
       .slice(0, 7);
   }, [q, areas]);
 
@@ -77,9 +77,9 @@ export default function AreaSearch({ areas }: { areas: AreaSummary[] }) {
                   className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left ${i === active ? "bg-cell" : ""}`}
                 >
                   <span className="min-w-0">
-                    <span className="font-medium">{a.name}</span>
+                    <span className="font-medium">{placeLabel(a.name)}</span>
                     <span className="text-ink-3">
-                      {a.level === "township" && a.state ? `, ${a.state}` : a.level === "state" ? `, ${t.search.state}` : ""}
+                      {a.level === "township" && a.state ? `, ${placeLabel(a.state)}` : a.level === "state" ? `, ${t.search.state}` : ""}
                     </span>
                   </span>
                   <StatusPill status={a.status} />

@@ -10,7 +10,7 @@ import StatusPill from "@/components/StatusPill";
 import TelegramCta from "@/components/TelegramCta";
 import { CalendarIcon, ChevronIcon, MatchIcon, SatelliteIcon } from "@/components/Icons";
 import { useLang } from "@/lib/i18n";
-import { fmt, observedYears, onlyYears, type AreaDetail, type AreaSummary } from "@/lib/types";
+import { fmt, observedYears, onlyYears, placeLabel, type AreaDetail, type AreaSummary } from "@/lib/types";
 
 const MyanmarMap = dynamic(() => import("@/components/MyanmarMap"), { ssr: false });
 
@@ -105,7 +105,7 @@ export default function Home() {
                 <Link href={`/area/${encodeURIComponent(a.area_id)}`} className="flex items-center justify-between gap-4 py-3.5 hover:bg-white">
                   <span className="min-w-0">
                     <span className="font-medium">{a.name}</span>
-                    <span className="text-ink-3"> {a.state}</span>
+                    <span className="text-ink-3"> {placeLabel(a.state)}</span>
                   </span>
                   <span className="flex shrink-0 items-center gap-3">
                     <span className="hidden text-sm tabular-nums text-ink-2 sm:inline">{t.week.firesShort(fmt(a.r7))}</span>
