@@ -72,6 +72,13 @@ const en = {
     dataTo: (d: string) => `Data up to ${d}`,
     last7: "Last 7 days",
     normalAbout: (n: string) => `Usual: about ${n}`,
+    monthTitle: (m: string) => `${m} so far`,
+    monthUsual: (d: string, n: string) => `By ${d}, a usual year has about ${n}.`,
+    monthWhole: (m: string, n: string) => `A whole ${m} usually has about ${n}.`,
+    monthBasis: (a: number, b: number) => `“Usual” is the median of ${a}–${b}, all on the NOAA-20 scale.`,
+    monthMore: (x: string) => `${x}× the usual`,
+    monthAbout: "About usual",
+    monthLess: "Below usual",
     noNormal: "Usual: not known yet",
     thisYear: "This year",
     typicalYear: "A usual year",
@@ -113,6 +120,7 @@ const en = {
     return `${d.getUTCDate()} ${MONTHS_EN[d.getUTCMonth()]}${withYear ? ` ${d.getUTCFullYear()}` : ""}`;
   },
   months: MONTHS_EN,
+  monthsLong: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
   monthsShort: MONTHS_EN,
   faq: [
     ["What is Mee?", "A free website that shows when and where fires burn in Myanmar, township by township, and whether this week is busier than usual."],
@@ -195,6 +203,13 @@ const my: Dict = {
     dataTo: (d) => `${d} အထိ ဒေတာ`,
     last7: "နောက်ဆုံး ၇ ရက်",
     normalAbout: (n) => `ပုံမှန် ${n} လောက်`,
+    monthTitle: (m) => `${m} လ (ယခုထိ)`,
+    monthUsual: (d, n) => `${d} အထိ ပုံမှန်နှစ်မှာ ${n} လောက် ရှိတတ်ပါတယ်။`,
+    monthWhole: (m, n) => `${m} လ တစ်လလုံးမှာ ပုံမှန် ${n} လောက် ရှိတတ်ပါတယ်။`,
+    monthBasis: (a, b) => `“ပုံမှန်” ဆိုတာ ${a}–${b} ရဲ့ အလယ်ကိန်း (median) ဖြစ်ပြီး အားလုံး NOAA-20 စကေးပေါ်မှာပါ။`,
+    monthMore: (x) => `ပုံမှန်ရဲ့ ${x} ဆ`,
+    monthAbout: "ပုံမှန်လောက်ပဲ",
+    monthLess: "ပုံမှန်ထက် နည်း",
     noNormal: "ပုံမှန် မသိရသေးပါ",
     thisYear: "ဒီနှစ်",
     typicalYear: "ပုံမှန်နှစ်",
@@ -236,6 +251,7 @@ const my: Dict = {
     return `${d.getUTCDate()} ${MONTHS_MY[d.getUTCMonth()]}${withYear ? ` ${d.getUTCFullYear()}` : ""}`;
   },
   months: MONTHS_MY,
+  monthsLong: MONTHS_MY,
   monthsShort: ["ဇန်", "ဖေ", "မတ်", "ဧ", "မေ", "ဇွန်", "ဇူ", "ဩ", "စက်", "အောက်", "နို", "ဒီ"],
   faq: [
     ["Mee ဆိုတာ ဘာလဲ။", "မြန်မာပြည်မှာ ဘယ်အချိန်၊ ဘယ်နေရာ မီးလောင်လဲ မြို့နယ်အလိုက် ပြပေးတဲ့ အခမဲ့ ဝက်ဘ်ဆိုက်ပါ။ ဒီအပတ် ပုံမှန်ထက် မီးများနေလားဆိုတာလည်း ပြပါတယ်။"],

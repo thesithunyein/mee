@@ -41,6 +41,27 @@ export default function AreaView() {
     );
     return out;
   }, [a]);
+  // This month so far vs the same days of this month in earlier years (the brief's
+  // "current month against the historical median").
+  const month = useMemo(() => {
+    if (!a) return null;
+    const [y0, m0, d0] = a.last_date.split("-").map(Number);
+    const sum = (y: number, upto: number) => {
+      const yi = a.years.indexOf(y);
+      if (yi < 0) return null;
+      const startDoy = Math.round((Date.UTC(y, m0 - 1, 1) - Date.UTC(y, 0, 1)) / 864e5);
+      let n = 0;
+      for (let d = 0; d < upto; d++) n += a.calendar[yi][startDoy + d] ?? 0;
+      return n;
+    };
+    const past = a.years.filter((y) => y < y0);
+    if (past.length < 3) return null;
+    const monthLen = (y: number) => new Date(Date.UTC(y, m0, 0)).getUTCDate();
+    const soFar = sum(y0, d0) ?? 0;
+    const usual = median(past.map((y) => sum(y, Math.min(d0, monthLen(y))) ?? 0));
+    const whole = median(past.map((y) => sum(y, monthLen(y)) ?? 0));
+    return { m0, soFar, usual, whole, first: past[0], last: past[past.length - 1] };
+  }, [a]);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const minDate = daily[0]?.[0] ?? "";
@@ -121,6 +142,37 @@ export default function AreaView() {
           ))}
         </div>
       </header>
+
+      {month && (
+        <section className="grid gap-6 rounded-3xl border border-line bg-white p-6 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-10 sm:p-8">
+          <div>
+            <div className="text-sm text-ink-2">{t.area.monthTitle(t.monthsLong[month.m0 - 1])}</div>
+            <div className="mt-1 flex items-baseline gap-3">
+              <span className="text-5xl font-semibold tracking-tight">{fmt(month.soFar)}</span>
+              <span
+                className={`rounded-full px-2.5 py-1 text-sm font-medium ${
+                  month.soFar > month.usual * 1.25 && month.soFar - month.usual >= 3
+                    ? "bg-ember/10 text-ember"
+                    : "bg-cell text-ink-2"
+                }`}
+              >
+                {month.soFar > month.usual * 1.25 && month.soFar - month.usual >= 3
+                  ? month.usual >= 1
+                    ? t.area.monthMore((month.soFar / month.usual).toFixed(1))
+                    : t.status.elevated
+                  : month.soFar < month.usual * 0.75 && month.usual - month.soFar >= 3
+                    ? t.area.monthLess
+                    : t.area.monthAbout}
+              </span>
+            </div>
+          </div>
+          <div className="space-y-1 text-ink-2 sm:border-l sm:border-line sm:pl-10">
+            <p className="text-ink">{t.area.monthUsual(t.date(a.last_date, false), fmt(month.usual))}</p>
+            <p>{t.area.monthWhole(t.monthsLong[month.m0 - 1], fmt(month.whole))}</p>
+            <p className="text-sm text-ink-3">{t.area.monthBasis(month.first, month.last)}</p>
+          </div>
+        </section>
+      )}
 
       <section>
         <h2 className="text-2xl font-semibold tracking-tight">{t.area.calTitle}</h2>
