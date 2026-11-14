@@ -9,7 +9,7 @@ NASA satellite fire data for every township in one consistent calendar, with ale
 
 [![Live site](https://img.shields.io/badge/live-meefire.app-E0451B?style=flat-square)](https://meefire.app)
 [![Telegram bot](https://img.shields.io/badge/Telegram-@mee__fire__bot-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/mee_fire_bot)
-[![Data: NASA FIRMS](https://img.shields.io/badge/data-NASA%20FIRMS-0B3D91?style=flat-square&logo=nasa&logoColor=white)](https://firms.modaps.eosdis.nasa.gov/)
+[![Data: NASA FIRMS](https://img.shields.io/badge/data-NASA%20FIRMS-0B3D91?style=flat-square)](https://firms.modaps.eosdis.nasa.gov/)
 [![License: MIT](https://img.shields.io/github/license/thesithunyein/mee?style=flat-square&color=17211C)](LICENSE)
 <br />
 [![Next.js](https://img.shields.io/badge/Next.js-16-17211C?style=flat-square&logo=nextdotjs)](web)
