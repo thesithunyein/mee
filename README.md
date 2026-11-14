@@ -23,28 +23,43 @@ NASA satellite fire data for every township in one consistent calendar, with ale
 
 ---
 
-## What Mee is
+## The problem
 
-Every dry season, from about January to May, fires burn across Myanmar and fill the air with smoke. NASA satellites see these fires every day, but the record is split across five satellites that each see fire differently. Raw counts jump when a satellite is added or switched off, so one year can't be fairly compared with another.
+**1. Every year, Myanmar burns, and people find out too late.**
+From about January to May, fires burn across Myanmar: farm clearing, forest fires and burning along the borders. Smoke covers cities and villages for weeks. Fire teams, forest departments and health workers need to know *when* the season is starting and *whether this year is worse than usual*, early enough to act.
 
-Mee merges all five into one record and turns it into something people can use:
+**2. NASA has the data, but it doesn't add up.**
+Satellites have recorded every large fire since 2000, but the record is split across five satellites that see fire very differently:
+
+| Satellite | Instrument | Pixel size | Data from |
+|---|---|---|---|
+| Terra, Aqua | MODIS | 1 km | 2000 |
+| Suomi NPP, NOAA-20, NOAA-21 | VIIRS | 375 m | 2012 |
+
+VIIRS sees far more small fires. In 2019, **NOAA-20 recorded 313,048 fire detections over Myanmar, while MODIS recorded 56,667** for the same place and year. Put them on one chart and 2012 looks like the year fires exploded, when really a better satellite was launched.
+
+**3. The record is breaking right now.**
+Fire data from Suomi NPP stopped on 2 November 2026, and NASA plans to end Terra and Aqua data collection in 2027. Any simple fire chart will soon show fire "dropping" just because satellites are switching off.
+
+**4. Nobody can answer the simple question.**
+Without one consistent record, a fire manager can't tell whether this week in their township is normal for the time of year or a warning sign. Historical patterns, unusual conditions and critical periods stay hidden in raw files that few people can use.
+
+## What Mee does
+
+Mee merges all five satellites into **one consistent record from 2000 to today**, on the scale of NOAA-20, the satellite that keeps operating. It then turns that record into something people can use:
 
 | | |
 |---|---|
 | **Fire calendar** | For Myanmar, its 14 states and regions, and its 330 townships. One row per year, one square per day. |
 | **This week vs normal** | The last 7 days against the same week in every past year. Each place is marked *Normal*, *Above normal* or *Far above normal*. |
 | **Telegram alerts** | Follow any township in [@mee_fire_bot](https://t.me/mee_fire_bot) and get a message when its fire level changes. |
+| **Updated every day** | New NASA data is processed automatically every morning, with no manual work. |
 | **Season facts** | Start, busiest week, end and total for every year, compared with a typical year. |
 | **Open data** | Daily CSV download for any area. Free to use with credit. |
 
-**Who it's for:** disaster and forest teams, farmers' groups, health workers watching smoke, researchers and journalists.
+**Who it's for:** emergency responders, forest and land managers, farmers' groups, health workers watching smoke, researchers and journalists.
 
-### Why it matters now
-
-- **MODIS** (Terra and Aqua, 1 km pixels) has data from 2000. **VIIRS** (Suomi NPP, NOAA-20, NOAA-21, 375 m pixels) has data from 2012 and sees far more small fires. In 2019, NOAA-20 recorded about 300,000 detections over Myanmar while MODIS recorded about 57,000.
-- Fire data from Suomi NPP stopped on 2 November 2026, and NASA plans to end Terra and Aqua data collection in 2027. A simple fire chart will show drops caused by satellites going away, not by real changes in fire.
-
-Mee puts every satellite on the scale of **NOAA-20**, which keeps operating, so the record stays consistent from 2000 onward.
+**Does the merging work?** With 2024 held out of the fitting, raw MODIS got Myanmar's yearly total wrong by **−82%**. After Mee's scaling, the error is **+3%**. See [Validate](#the-harmonization-method) below.
 
 ## How it works
 
