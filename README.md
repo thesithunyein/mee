@@ -61,6 +61,17 @@ Mee merges all five satellites into **one consistent record from 2000 to today**
 
 **Does the merging work?** With 2024 held out of the fitting, raw MODIS got Myanmar's yearly total wrong by **−82%**. After Mee's scaling, the error is **+3%**. See [Validate](#the-harmonization-method) below.
 
+### What happens when satellites stop?
+
+Mee is built for satellites that come and go.
+
+- **The old satellites are ending; the new ones continue.** MODIS on Terra and Aqua ends in 2027, and Suomi NPP fire data stopped in November 2026. NOAA-20 and NOAA-21, the newest VIIRS satellites, keep operating, and NASA FIRMS publishes their fire data for free.
+- **Nothing breaks when MODIS stops.** Every satellite is already converted to the NOAA-20 scale. The history from 2000 was tied to NOAA-20 while both were flying (2018–2026), so it stays comparable after MODIS is gone. The daily update already uses only NOAA-20 and NOAA-21.
+- **New satellites plug in the same way.** When a new fire satellite starts, Mee compares it with NOAA-20 on days both observe, computes a factor for each state and month, and adds it. That's exactly how NOAA-21 was added.
+- **The method isn't tied to one data provider.** Other open fire products, such as Europe's Sentinel-3 or Japan's Himawari, could be calibrated the same way if ever needed.
+
+In short: Mee saves 25 years of MODIS history by tying it to the satellites that will keep flying.
+
 ## How it works
 
 <p align="center"><img src="docs/architecture.png" alt="Architecture: NASA FIRMS data flows through the Python pipeline into static JSON, served by the Next.js site on Vercel; a Telegram bot and a daily alert job use Upstash Redis to message followers." width="100%" /></p>
