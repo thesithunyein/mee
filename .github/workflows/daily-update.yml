@@ -7,6 +7,8 @@ name: Daily fire data update
 on:
   schedule:
     - cron: "40 23 * * *"
+    # Backup run 3 hours later, in case GitHub skips the first (it sometimes does). Safe to repeat.
+    - cron: "40 2 * * *"
   workflow_dispatch:
 
 permissions:
