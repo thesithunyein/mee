@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ember } from "@/lib/geo";
 import { useLang } from "@/lib/i18n";
-import { MONTH_START_DOY, doyLabelIn, fmt } from "@/lib/types";
+import { MONTH_START_DOY, dateLabelIn, fmt } from "@/lib/types";
 
 interface Props {
   years: number[];
@@ -88,7 +88,9 @@ export default function CalendarHeatmap({ years, calendar, lastDate, rowHeight }
     if (d < 0 || d >= 366 || yi < 0 || yi >= years.length) return setHover(null);
     const date = new Date(Date.UTC(years[yi], 0, d + 1));
     if (date > last || date.getUTCFullYear() !== years[yi]) return setHover(null);
-    setHover({ x, y, title: `${doyLabelIn(d + 1, t.months)} ${years[yi]}`, value: t.tip.fires(fmt(calendar[yi][d])) });
+    const day = dateLabelIn(years[yi], d + 1, t.months);
+    if (!day) return setHover(null);
+    setHover({ x, y, title: `${day} ${years[yi]}`, value: t.tip.fires(fmt(calendar[yi][d])) });
   }
 
   return (

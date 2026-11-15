@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useLang } from "@/lib/i18n";
-import { MONTH_START_DOY, doyLabelIn, fmt, rolling7 } from "@/lib/types";
+import { MONTH_START_DOY, dateLabelIn, fmt, rolling7 } from "@/lib/types";
 
 interface Props {
   years: number[];
@@ -104,7 +104,7 @@ export default function SeasonChart({ years, calendar, normals, lastDate }: Prop
             className="pointer-events-none absolute top-0 rounded-lg border border-line bg-white px-3 py-2 text-xs shadow-[0_8px_24px_-12px_rgba(23,33,28,0.35)]"
             style={{ left: `min(calc(${(x(h) / W) * 100}% + 10px), calc(100% - 170px))` }}
           >
-            <div className="text-ink-3">{t.tip.weekTo(doyLabelIn(h, t.months))}</div>
+            <div className="text-ink-3">{t.tip.weekTo(dateLabelIn(year, h, t.months))}</div>
             <div className="font-semibold tabular-nums">{t.tip.fires(fmt(series[h - 1]))}</div>
             <div className="tabular-nums text-ink-2">{t.tip.normal(fmt(normals.p50[h - 1]))}</div>
           </div>

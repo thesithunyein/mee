@@ -9,7 +9,7 @@ import StatusPill from "@/components/StatusPill";
 import TelegramCta from "@/components/TelegramCta";
 import { BackIcon, DownloadIcon } from "@/components/Icons";
 import { useLang, type Dict } from "@/lib/i18n";
-import { doyLabelIn, fmt, observedYears, onlyYears, placeLabel, type AreaDetail } from "@/lib/types";
+import { dateLabelIn, fmt, observedYears, onlyYears, placeLabel, type AreaDetail } from "@/lib/types";
 
 export default function AreaView() {
   const { id } = useParams<{ id: string }>();
@@ -329,7 +329,8 @@ function summarize(a: AreaDetail, t: Dict): string | null {
   const peak = Math.round(median(seasons.map((s) => shift(doyOf(s.peak_date!)))));
   const end = Math.round(median(seasons.map((s) => shift(doyOf(s.end_date!)))));
   const now = shift(doyOf(a.last_date));
-  const label = (d: number) => doyLabelIn(unshift(d), t.months);
+  const refYear = Number(a.last_date.slice(0, 4));
+  const label = (d: number) => dateLabelIn(refYear, Math.min(unshift(d), 365), t.months);
   if (now < start) return `${first} ${t.summary.before(label(start), label(peak), start - now)}`;
   if (now <= end) return `${first} ${t.summary.during(label(peak))}`;
   return `${first} ${t.summary.after(label(start))}`;

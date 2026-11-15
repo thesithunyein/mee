@@ -110,6 +110,13 @@ export function onlyYears(a: AreaDetail, keep: Set<number>): AreaDetail {
   };
 }
 
+// Day-of-year (1-based) to "14 Nov" for a real year, so leap and non-leap years both label right.
+export function dateLabelIn(year: number, doy: number, months: string[]): string {
+  const d = new Date(Date.UTC(year, 0, doy));
+  if (d.getUTCFullYear() !== year) return "";
+  return `${d.getUTCDate()} ${months[d.getUTCMonth()]}`;
+}
+
 export function doyLabelIn(doy: number, months: string[]): string {
   let m = 11;
   while (m > 0 && MONTH_START_DOY[m] > doy) m--;
