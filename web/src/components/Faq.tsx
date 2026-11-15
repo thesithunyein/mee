@@ -2,6 +2,27 @@
 
 import { useLang } from "@/lib/i18n";
 
+const AUTHOR = "Sithu Nyein";
+
+function withAuthorLink(text: string) {
+  const i = text.indexOf(AUTHOR);
+  if (i === -1) return text;
+  return (
+    <>
+      {text.slice(0, i)}
+      <a
+        href="https://sithunyein.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-ink underline decoration-line underline-offset-4 hover:decoration-ink"
+      >
+        {AUTHOR}
+      </a>
+      {text.slice(i + AUTHOR.length)}
+    </>
+  );
+}
+
 export default function Faq() {
   const { t } = useLang();
   return (
@@ -25,7 +46,7 @@ export default function Faq() {
                 <span className="absolute inset-y-0 left-1/2 w-[1.5px] -translate-x-1/2 rounded bg-current transition-transform duration-200 group-open:scale-y-0" />
               </span>
             </summary>
-            <p className="max-w-2xl pb-6 leading-relaxed text-ink-2">{a}</p>
+            <p className="max-w-2xl pb-6 leading-relaxed text-ink-2">{withAuthorLink(a)}</p>
           </details>
         ))}
       </div>
